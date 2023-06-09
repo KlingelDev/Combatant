@@ -1,0 +1,108 @@
+import urwid as u
+import logging
+
+class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
+    signals = ['Quit', 'Dirty']
+    _border_char = u'─'
+
+    def __init__(self):
+        self.assemble()
+
+        super(WidgetCL, self).__init__(self._w)
+
+    def assemble(self, cl_text='timew command...', cols=80, rows=45):
+        self.edit_line = WidgetCLEdit(caption='')
+        self.edit_line.set_edit_text(cl_text)
+
+        self._cl_button = WidgetCLButton(cmd_label = ':',
+                                         on_press = self.focus_cl)
+        clb_w = self._cl_button.width
+        label = ''
+        padding_size = round(cols-clb_w-1)
+        logging.debug('clbw %s padding %s' % (clb_w, padding_size))
+        border = self._border_char * padding_size
+        cursor_position = len(border) + padding_size
+
+        self._top = u'─' + border
+        self._bottom = u'─' + border
+
+        self._cl_box = [
+                u.Text(self._top[:-1]),
+             u.Columns([(1, u.Text(' ')),
+                        u.Padding(self.edit_line, width=('relative', 100)) ]),
+            u.Text(self._bottom[:-1])
+        ]
+
+        self._w = u.Columns([
+            (clb_w, self._cl_button),
+            (padding_size, u.Pile(self._cl_box)),
+            (1, u.Pile([u.Text(u'┐'),
+                        u.Text(u'│'),
+                        u.Text(u'┘') ]))
+        ])
+
+        self._w = u.AttrMap(self._w, '', 'highlight')
+
+    def focus_cl(self, d):
+        logging.debug('clear')
+        self.edit_line.clear()
+        u.emit_signal(self, 'Dirty')
+
+        self.edit_line.set_edit_pos(0)
+
+    def win_change(self, colrows):
+        cols, rows = colrows
+        t = self.edit_line.get_edit_text()
+        self.assemble(cl_text=t, cols=cols, rows=rows)
+
+class WidgetCLButton(u.Button):
+    signals = ['click']
+
+    _border_char = u'─'
+
+    def __init__(self, cmd_label=':', on_press=None, user_data=None):
+        self._cmd_label = cmd_label
+        self.assemble()
+
+        super(u.Button, self).__init__(self._w)
+
+        if on_press:
+            u.connect_signal(self, 'click', on_press, user_data)
+
+        # here is a lil hack: use a hidden button for evt handling
+        #self._hidden_btn = urwid.Button('hidden %s' % label, on_press, user_data)
+
+        # super(WidgetCLButton, self).__init__(cmd_label, on_press = on_press,
+        #                                      user_data = user_data)
+
+    def assemble(self):
+        self._label = u.SelectableIcon("", 0)
+
+        padding_size = 2
+        border = self._border_char * (len(self._cmd_label) + padding_size * 2)
+        cursor_position = len(border) + padding_size
+
+        self.top = u'┌' + border + u'┬\n'
+        self.middle = u'│' + self._cmd_label + u'  │\n'
+        self.middle = u'│%s%s%s│\n' % (padding_size*' ', self._cmd_label,
+                                       padding_size*' ')
+        self.bottom = u'└' + border + u'┴'
+
+        logging.debug('top: %d' % (len(self.top)-1))
+
+        self._w = u.Pile([
+            u.Text(self.top[:-1]),
+            u.Text(self.middle[:-1]),
+            u.Text(self.bottom),
+        ])
+
+        self._w = u.AttrMap(self._w, '', 'highlight')
+
+    @property
+    def width(self):
+        return len(self.top)-1
+
+class WidgetCLEdit(u.Edit):
+    def clear(self):
+        self.set_edit_text('')
+        self._invalidate()
