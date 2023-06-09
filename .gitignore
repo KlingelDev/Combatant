@@ -1,0 +1,6 @@
+build/
+combatant.egg-info/
+combatest/
+dist/
+combatant/__pycache__/
+*.pypython3
