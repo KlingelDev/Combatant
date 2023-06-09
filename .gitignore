@@ -4,3 +4,4 @@ combatest/
 dist/
 combatant/__pycache__/
 *.pypython3
+*.log
