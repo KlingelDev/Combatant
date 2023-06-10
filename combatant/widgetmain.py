@@ -10,7 +10,8 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     Houses the frame with tabline, body and command line
     """
     def __init__(self):
-        # name, label, (WidgetTabButton Class) for special behavior
+        # Change out Tab/Body classes to implement special behavior
+        # name, label, (WidgetTabButton Class), (WidgetCargo Class)
         tabs = [('time', 'Time', WidgetTabButton),
                 ('modify', 'Modify'),
                 ('summary', 'Summary'),
@@ -22,7 +23,7 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
     def setup(self, tabs=[]):
         self._m_tabs = WidgetTabs(tabs=tabs)
-        self._m_body = WidgetBody()
+        self._m_body = WidgetBody(tabs=tabs)
         self._m_cl = WidgetCL()
 
         self._w = u.AttrWrap(u.Frame(header = self._m_tabs,

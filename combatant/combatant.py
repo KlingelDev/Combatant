@@ -57,6 +57,7 @@ class Combatant(metaclass = u.signals.MetaSignals):
         #self.uloop.set_alarm_in(1, self.frame.update_body)
 
         # Register and plug urwid/widget signals
+        u.register_signal(WidgetTabs, ['Dirty', 'TabSwitch'])
         u.register_signal(WidgetBody, ['Dirty', 'Quit'])
         u.register_signal(WidgetCL, ['Dirty', 'Quit'])
         u.register_signal(self, ['WinChange', 'AppStart'])
@@ -68,12 +69,13 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
         u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
 
-        u.connect_signal(self, 'AppStart', self.frame)
+        u.connect_signal(self, 'AppStart', self.frame.app_start)
+        u.connect_signal(self.frame.tabs, 'TabSwitch', self.frame.body.tab_switch)
 
     def run(self):
         try:
             # Do what needs to be done at first application start
-            #u.emit_signal(self, 'AppStart')
+            u.emit_signal(self, 'AppStart')
 
             # Let widgets know about winsize
             cols, rows = self.ui.get_cols_rows()
@@ -91,7 +93,6 @@ class Combatant(metaclass = u.signals.MetaSignals):
     def draw_screen(self):
         logging.debug('draw screen')
         self.uloop.draw_screen()
-
 
     def signal_quit(self):
         logging.debug('sig quit')

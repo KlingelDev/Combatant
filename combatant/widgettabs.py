@@ -2,7 +2,7 @@ import urwid as u
 import math, logging
 
 class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Dirty']
+    signals = ['Dirty', 'TabSwitch']
 
     def __init__(self, tabs=[]):
         self._tabs=tabs
@@ -12,6 +12,7 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     def assemble(self, cols=80, rows=45):
         self._tab_buttons = []
         for t in self._tabs:
+            # Make button WidgetTabButton or sth more special
             arg = {'tab_label': t[1],
                    'on_press': self.tbutton_press,
                    'user_data': (t[0], t[1])}
@@ -42,6 +43,7 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
             else:
                 t[2].set_attr_map({'selected': 'normal'})
 
+        u.emit_signal(self, 'TabSwitch', pt)
         logging.debug('tabpress {0} {1}'.format(repr(w), repr(data)))
 
 class WidgetTabButton(u.Button):
