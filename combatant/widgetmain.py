@@ -25,9 +25,10 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._m_body = WidgetBody()
         self._m_cl = WidgetCL()
 
-        self._w = u.Frame(header = self._m_tabs,
-                          body = self._m_body,
-                          footer = self._m_cl)
+        self._w = u.AttrWrap(u.Frame(header = self._m_tabs,
+                                     body = self._m_body,
+                                     footer = self._m_cl),
+                             'bg')
 
     def app_start(self):
         pass

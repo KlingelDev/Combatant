@@ -15,14 +15,17 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
             arg = {'tab_label': t[1],
                    'on_press': self.tbutton_press,
                    'user_data': (t[0], t[1])}
-            tb = [t[0], t[2](**arg) if len(t) == 3 else WidgetTabButton(**arg)]
+
+            tbm = t[2](**arg) if len(t) == 3 else WidgetTabButton(**arg)
+            tb = [t[0], tbm, u.AttrMap(tbm, 'normal', 'selected')]
+
             self._tab_buttons.append(tb)
 
         bwidth = 0
         bcolumn = []
         for b in self._tab_buttons:
             bwidth += b[1].width
-            bcolumn.append((b[1].width, b[1]))
+            bcolumn.append((b[1].width, b[2]))
 
         bcolumn.append(u.Padding(u.Text(u'\n\n'+u'─'*(cols-bwidth))))
         self._w = u.Columns(bcolumn)
@@ -32,7 +35,14 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self.assemble(cols=cols, rows=rows)
 
     def tbutton_press(self, w, data):
-        logging.debug('tabpress {0} {1}'.format(repr(k), repr(data)))
+        pt = data[0]
+        for t in self._tab_buttons:
+            if pt == t[0]:
+                t[2].set_attr_map({'normal': 'selected'})
+            else:
+                t[2].set_attr_map({'selected': 'normal'})
+
+        logging.debug('tabpress {0} {1}'.format(repr(w), repr(data)))
 
 class WidgetTabButton(u.Button):
     signals = ['click']
@@ -60,7 +70,7 @@ class WidgetTabButton(u.Button):
 
         self._w = u.Pile([
             u.Text(self.top[:-1]),
-            u.Text(self.middle[:-1]),
+            u.AttrWrap(u.Text(self.middle[:-1]), 'normal', 'selected'),
             u.Text(self.bottom),
         ])
 

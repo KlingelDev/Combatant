@@ -11,6 +11,14 @@ from widgetbody import WidgetBody
 from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
+class CombatantPalette:
+    @staticmethod
+    def colors():
+        return [("normal", "white", "black"),
+                ("selected", "black", "light cyan"),
+                ("bg", "white", "black")
+               ]
+
 class Combatant(metaclass = u.signals.MetaSignals):
     signals = ['AppStart', 'WinChange']
 
@@ -31,8 +39,9 @@ class Combatant(metaclass = u.signals.MetaSignals):
         self.asyncio_loop = asyncio.get_event_loop()
         self.aloop = u.AsyncioEventLoop(loop = self.asyncio_loop)
 
+        logging.debug('Palette {0}'.format(repr(CombatantPalette.colors())))
         self.uloop = u.MainLoop(self.frame,
-                                #unhandled_input = self.unhandled_input,
+                                CombatantPalette.colors(),
                                 handle_mouse = True,
                                 event_loop = self.aloop,
                                 pop_ups = True
