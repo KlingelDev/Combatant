@@ -63,7 +63,8 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.register_signal(self, ['WinChange', 'AppStart'])
 
         u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
-        u.connect_signal(self.frame.body, 'Quit', self.signal_quit)
+        u.connect_signal(self.frame.cl, 'Dirty', self.draw_screen)
+        u.connect_signal(self.frame, 'Quit', self.signal_quit)
 
         u.connect_signal(self, 'WinChange', self.frame.body.win_change)
         u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)

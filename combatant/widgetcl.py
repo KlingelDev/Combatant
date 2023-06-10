@@ -5,16 +5,17 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Quit', 'Dirty']
     _border_char = u'─'
 
-    def __init__(self):
+    def __init__(self, cmd_key=':'):
+        self._cmd_key = cmd_key
         self.assemble()
 
         super(WidgetCL, self).__init__(self._w)
 
     def assemble(self, cl_text='timew command...', cols=80, rows=45):
-        self.edit_line = WidgetCLEdit(caption='')
+        self.edit_line = WidgetCLEdit(caption='', wrap='clip')
         self.edit_line.set_edit_text(cl_text)
 
-        self._cl_button = WidgetCLButton(cmd_label = ':',
+        self._cl_button = WidgetCLButton(cmd_label = self._cmd_key,
                                          on_press = self.focus_cl)
         clb_w = self._cl_button.width
         label = ''
@@ -26,14 +27,15 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._top = u'─' + border
         self._bottom = u'─' + border
 
+        self.ed_col = u.Columns([(1, u.Text(' ')),
+                      u.Padding(self.edit_line, width=('relative', 100)) ])
         self._cl_box = [
                 u.Text(self._top[:-1]),
-             u.Columns([(1, u.Text(' ')),
-                        u.Padding(self.edit_line, width=('relative', 100)) ]),
+                self.ed_col,
             u.Text(self._bottom[:-1])
         ]
 
-        self._w = u.Columns([
+        self._wx = u.Columns([
             (clb_w, self._cl_button),
             (padding_size, u.Pile(self._cl_box)),
             (1, u.Pile([u.Text(u'┐'),
@@ -41,14 +43,15 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
                         u.Text(u'┘') ]))
         ])
 
-        self._w = u.AttrMap(self._w, '', 'highlight')
+        self._w = u.AttrMap(self._wx, '', 'highlight')
 
     def focus_cl(self, data):
-        logging.debug('clear')
+        logging.debug(f'focus_cl {data!r}')
+        logging.debug('clear cl')
+
         self.edit_line.clear()
         u.emit_signal(self, 'Dirty')
-
-        self.edit_line.set_edit_pos(0)
+        logging.debug('CL Dirty')
 
     def win_change(self, colrows):
         cols, rows = colrows
@@ -95,4 +98,4 @@ class WidgetCLButton(u.Button):
 class WidgetCLEdit(u.Edit):
     def clear(self):
         self.set_edit_text('')
-        self._invalidate()
+        #self._invalidate()

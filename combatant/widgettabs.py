@@ -17,7 +17,7 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
                    'on_press': self.tbutton_press,
                    'user_data': (t[0], t[1])}
 
-            tbm = t[2](**arg) if len(t) == 3 else WidgetTabButton(**arg)
+            tbm = t[3](**arg) if len(t) == 4 else WidgetTabButton(**arg)
             tb = [t[0], tbm, u.AttrMap(tbm, 'normal', 'selected')]
 
             self._tab_buttons.append(tb)

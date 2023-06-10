@@ -6,14 +6,15 @@ class WidgetBody(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
     def __init__(self, tabs=[]):
         self._tabs = tabs
-        self.setup()
+        self.assemble()
 
         super(WidgetBody, self).__init__(self._w)
 
-    def setup(self):
+    def assemble(self):
         self.cargo = {}
         for t in self._tabs:
-            self.cargo[t[0]] = WidgetCargo(t[1])
+            arg = {'txt': t[1]}
+            self.cargo[t[0]] = t[3](**arg) if len(t) == 5 else WidgetCargo(**arg)
 
         # Set 'random' cargo for now, till AppStart
         self._w = self.cargo[list(self.cargo.keys())[0]]
@@ -31,7 +32,7 @@ class WidgetBody(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 class WidgetCargo(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Dirty']
 
-    def __init__(self, txt):
+    def __init__(self, txt=''):
         self._w = u.Filler(u.Text(txt))
 
         super(WidgetCargo, self).__init__(self._w)
