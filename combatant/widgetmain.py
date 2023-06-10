@@ -2,7 +2,7 @@ import urwid as u
 
 from widgetcl import WidgetCL
 from widgetbody import WidgetBody
-from widgettabs import WidgetTabs
+from widgettabs import WidgetTabs, WidgetTabButton
 
 class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Quit']
@@ -10,18 +10,27 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     Houses the frame with tabline, body and command line
     """
     def __init__(self):
-        self.setup()
+        # name, label, (WidgetTabButton Class) for special behavior
+        tabs = [('time', 'Time', WidgetTabButton),
+                ('modify', 'Modify'),
+                ('summary', 'Summary'),
+                ('config', 'Config')]
+
+        self.setup(tabs=tabs)
 
         super(WidgetMain, self).__init__(self._w)
 
-    def setup(self):
-        self._m_tabs = WidgetTabs()
+    def setup(self, tabs=[]):
+        self._m_tabs = WidgetTabs(tabs=tabs)
         self._m_body = WidgetBody()
         self._m_cl = WidgetCL()
 
         self._w = u.Frame(header = self._m_tabs,
                           body = self._m_body,
                           footer = self._m_cl)
+
+    def app_start(self):
+        pass
 
     def keypress(self, size, key):
         if key == 'q' or key == 'Q':

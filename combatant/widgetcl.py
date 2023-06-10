@@ -43,7 +43,7 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
         self._w = u.AttrMap(self._w, '', 'highlight')
 
-    def focus_cl(self, d):
+    def focus_cl(self, data):
         logging.debug('clear')
         self.edit_line.clear()
         u.emit_signal(self, 'Dirty')

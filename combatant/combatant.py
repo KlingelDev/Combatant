@@ -12,7 +12,8 @@ from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
 class Combatant(metaclass = u.signals.MetaSignals):
-    signals = ['Setup', 'WinChange']
+    signals = ['AppStart', 'WinChange']
+
     #NOTE: Deal with highest level of the Application, Interface, Files, Threads
     def __init__(self, setup=False):
         logging.debug('...starting.')
@@ -49,7 +50,7 @@ class Combatant(metaclass = u.signals.MetaSignals):
         # Register and plug urwid/widget signals
         u.register_signal(WidgetBody, ['Dirty', 'Quit'])
         u.register_signal(WidgetCL, ['Dirty', 'Quit'])
-        u.register_signal(self, ['WinChange'])
+        u.register_signal(self, ['WinChange', 'AppStart'])
 
         u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
         u.connect_signal(self.frame.body, 'Quit', self.signal_quit)
@@ -58,10 +59,12 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
         u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
 
+        u.connect_signal(self, 'AppStart', self.frame)
+
     def run(self):
         try:
             # Do what needs to be done at first application start
-            u.emit_signal(self, 'Setup')
+            #u.emit_signal(self, 'AppStart')
 
             # Let widgets know about winsize
             cols, rows = self.ui.get_cols_rows()
@@ -84,11 +87,6 @@ class Combatant(metaclass = u.signals.MetaSignals):
     def signal_quit(self):
         logging.debug('sig quit')
         raise u.ExitMainLoop()
-
-    def unhandled_input(self):
-        if key == 'q' or key == 'Q':
-            logging.debug('pressed Q')
-            self.signal_quit()
 
     def signal_winch(self):
         cols, rows = self.ui.get_cols_rows()
