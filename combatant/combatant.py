@@ -12,7 +12,7 @@ from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
 class Combatant(metaclass = u.signals.MetaSignals):
-    signals = ['WinChange']
+    signals = ['Setup', 'WinChange']
     #NOTE: Deal with highest level of the Application, Interface, Files, Threads
     def __init__(self, setup=False):
         logging.debug('...starting.')
@@ -54,13 +54,15 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
         u.connect_signal(self.frame.body, 'Quit', self.signal_quit)
 
-        # TODO prob needs a sig with tick to make sure all are up to date
         u.connect_signal(self, 'WinChange', self.frame.body.win_change)
         u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
         u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
 
     def run(self):
         try:
+            # Do what needs to be done at first application start
+            u.emit_signal(self, 'Setup')
+
             # Let widgets know about winsize
             cols, rows = self.ui.get_cols_rows()
             u.emit_signal(self, 'WinChange', (cols, rows))

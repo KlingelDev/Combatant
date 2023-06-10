@@ -1,5 +1,5 @@
 import urwid as u
-import logging
+import math, logging
 
 class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Quit', 'Dirty']
@@ -69,12 +69,6 @@ class WidgetCLButton(u.Button):
         if on_press:
             u.connect_signal(self, 'click', on_press, user_data)
 
-        # here is a lil hack: use a hidden button for evt handling
-        #self._hidden_btn = urwid.Button('hidden %s' % label, on_press, user_data)
-
-        # super(WidgetCLButton, self).__init__(cmd_label, on_press = on_press,
-        #                                      user_data = user_data)
-
     def assemble(self):
         self._label = u.SelectableIcon("", 0)
 
@@ -82,13 +76,9 @@ class WidgetCLButton(u.Button):
         border = self._border_char * (len(self._cmd_label) + padding_size * 2)
         cursor_position = len(border) + padding_size
 
-        self.top = u'┌' + border + u'┬\n'
-        self.middle = u'│' + self._cmd_label + u'  │\n'
-        self.middle = u'│%s%s%s│\n' % (padding_size*' ', self._cmd_label,
-                                       padding_size*' ')
-        self.bottom = u'└' + border + u'┴'
-
-        logging.debug('top: %d' % (len(self.top)-1))
+        self.top    = f'┌{border}┬\n'
+        self.middle =  '│{s}{0}{s}│\n'.format(self._cmd_label, s=padding_size* ' ')
+        self.bottom = f'└{border}┴'
 
         self._w = u.Pile([
             u.Text(self.top[:-1]),
