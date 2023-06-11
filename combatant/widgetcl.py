@@ -51,6 +51,7 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
     def send_cmd(self):
         cmd = self.edit_line.get_edit_text()
+        self._cmds.append(cmd)
         u.emit_signal(self, 'CMD', cmd)
         self.cl_clear()
 

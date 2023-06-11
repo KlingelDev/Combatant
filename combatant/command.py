@@ -1,21 +1,33 @@
 import subprocess
+import logging
+import time
+import asyncio
 
-def CleanCMD(self):
-    # Prevent abuse, injections
+class TW:
+    @staticmethod
+    def run(command, *args, **kwargs):
+        scmd = TW.sanatize(command)
+        proc = subprocess.Popen(scmd, **kwargs)
+        stdout, stderr = proc.communicate()
+        returncode = proc.returncode
+        return (returncode, stdout, stderr)
+
     @staticmethod
     def sanatize(cmd):
-        out = ''
+        out = cmd
         return out
 
-def Command(self):
-    def __init__(self):
-        pass
+    @staticmethod
+    async def help():
+        logging.debug('async help')
+        result = TW.run(['timew', 'help'], stdout=subprocess.PIPE,
+                                           stdin=subprocess.PIPE)
+        return result
 
-def Result(self):
-    def __init__(self):
-        pass
-
-def TWProcess:
-    def __init__(self):
-        pass
+    @staticmethod
+    async def version():
+        logging.debug('async version')
+        result = TW.run(['timew', '--version'], stdout=subprocess.PIPE,
+                                                stdin=subprocess.PIPE)
+        return result
 

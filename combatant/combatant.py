@@ -11,7 +11,7 @@ from widgetbody import WidgetBody
 from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
-from command import TWProcess, Command, Result
+from command import TW
 
 class CombatantPalette:
     @staticmethod
@@ -38,6 +38,9 @@ class Combatant(metaclass = u.signals.MetaSignals):
         logging.debug('...starting.')
         self._tick = 0.1 #sec
         self._last_tick = time.time_ns()
+
+        self._tasks = set()
+        self.f = ''
 
         if setup:
             self.setup()
@@ -105,10 +108,42 @@ class Combatant(metaclass = u.signals.MetaSignals):
             traceback.print_exception(exc, limit=1, file=sys.stdout)
             self.signal_quit()
 
-    def signal_cmd(self, data):
-        logging.debug(f'CMD {data!r}')
-        if data == 'quit' or data == 'Quit':
+    def signal_cmd(self, cmd):
+        logging.debug(f'CMD {cmd!r}')
+        if cmd == 'quit' or cmd == 'Quit':
             self.signal_quit()
+
+        elif cmd in ['help', '--help']:
+            logging.debug('creating cmd help task')
+            task = \
+                self.asyncio_loop.create_task(TW.help(),
+                                              name='TWCMD')
+            task.add_done_callback(self.cmd_result)
+            self._tasks.add(task)
+
+        elif cmd in ['version', '--version']:
+            logging.debug('creating cmd task')
+            task = \
+                self.asyncio_loop.create_task(TW.version(),
+                                              name='TWCMD')
+            task.add_done_callback(self.cmd_result)
+            self._tasks.add(task)
+
+    def cmd_result(self, task):
+        try:
+            r = task.result()
+            logging.debug(
+                'Cmd result: {0} len out ({1}); {2}...'.format(r[0],
+                                                               len(r[1]),
+                                r[1][:200 if len(r[1])>=200 else len(r[1])]))
+
+        except BaseException as exc:
+            logging.debug(f'Task Error Traceback')
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
+
+        self._tasks.discard(task)
 
     def draw_screen(self):
         logging.debug('draw screen')

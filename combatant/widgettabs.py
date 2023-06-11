@@ -84,12 +84,7 @@ class WidgetTabButton(u.Button):
         #self.bottom = f'{bborder}'
 
         self._w = u.Pile([
-            #u.Columns([
-            #u.Text(' '),
-            #u.AttrMap(u.Text(self.top[:-1]), 'normal', 'selected'),
-            #]),
-            u.AttrMap(u.Text(self.middle, wrap='clip'), 'normal', 'selected'),
-            #u.AttrMap(u.Text(self.bottom), 'selected'),
+            u.AttrMap(u.Text(self.middle, wrap='clip'), 'normal', 'selected')
         ])
 
         self._w = u.AttrMap(self._w , 'normal', 'selected')
