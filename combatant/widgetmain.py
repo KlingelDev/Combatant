@@ -20,7 +20,7 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
                       ('labels', 'Labels', 'L'),
                       ('modify', 'Modify', 'M'),
                       ('summary', 'Summary', 'S'),
-                      ('config', '⚙', 'C')]
+                      ('config', 'Config', 'C')]
 
         self.assemble()
 
@@ -39,7 +39,11 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._w = u.AttrWrap(self._frame, 'bg')
 
     def app_start(self):
-        logging.debug('AppStart WidgetMain')
+        t = self._tabs[0]
+        logging.debug(f'AppStart WidgetMain{t!r}')
+        self._frame.focus_position = 'header'
+        self._m_tabs._bc.focus_position = 1
+        self._m_tabs.tbutton_press(self, (t[0], t[1]))
 
     def keypress(self, size, key):
         if key == 'ctl q' or key == 'ctrl Q':

@@ -11,23 +11,18 @@ class WidgetBody(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         super(WidgetBody, self).__init__(self._w)
 
     def assemble(self):
-        self.cargo = {}
+        self.cargo = {'EMPTY': WidgetCargo()}
         for t in self._tabs:
             arg = {'txt': t[1]}
             self.cargo[t[0]] = t[3](**arg) if len(t) == 5 else WidgetCargo(**arg)
 
-        # Set 'random' cargo for now, till AppStart
-        self._w = self.cargo[list(self.cargo.keys())[0]]
+        self._w = self.cargo['EMPTY']
 
     def win_change(self, colrows):
         cols, rows = colrows
 
-    def app_start(self):
-        pass
-
     def tab_switch(self, t):
         self._w = self.cargo[t]
-        u.emit_signal(self, 'Dirty')
 
 class WidgetCargo(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Dirty']

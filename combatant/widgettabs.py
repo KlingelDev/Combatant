@@ -18,18 +18,27 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
                    'user_data': (t[0], t[1])}
 
             tbm = t[3](**arg) if len(t) == 4 else WidgetTabButton(**arg)
-            tb = [t[0], tbm, u.AttrMap(tbm, 'normal', 'selected')]
+            tb = [t[0], tbm, u.AttrMap(tbm, '')]
 
             self._tab_buttons.append(tb)
 
         bwidth = 0
+        bspace = u.Text(' ')
         bcolumn = []
         for b in self._tab_buttons:
+            if b[0] == 'config':
+                bcolumn.append(bspace)
+
             bwidth += b[1].width
             bcolumn.append((b[1].width, b[2]))
 
-        bcolumn.append(u.Padding(u.Text(u'\n\n'+u'─'*(cols-bwidth))))
-        self._w = u.Columns(bcolumn)
+        bcolumn[-2] = u.Text(' '*(cols-bwidth))
+        self._bc =u.Columns(bcolumn)
+        tabborder = u.AttrMap(u.Text('▔'*(cols)),'tabborder')
+        self._w = u.GridFlow([
+            self._bc,
+            tabborder
+            ], cell_width=cols, h_sep=0, v_sep=0, align='left')
 
     def win_change(self, colrows):
         cols, rows = colrows
@@ -37,8 +46,10 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
     def tbutton_press(self, w, data):
         pt = data[0]
+        logging.debug('tabl {0}'.format(pt))
         for t in self._tab_buttons:
             if pt == t[0]:
+                logging.debug('t2 {0}'.format(repr(t[2].get_attr_map())))
                 t[2].set_attr_map({'normal': 'selected'})
             else:
                 t[2].set_attr_map({'selected': 'normal'})
@@ -49,7 +60,8 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 class WidgetTabButton(u.Button):
     signals = ['click']
 
-    _border_char = u'─'
+    _border_char = u'▔'
+    _bborder_char = u'▁'
     def __init__(self, tab_label='TabLabel', on_press=None, user_data=None):
         self._tab_label = tab_label
         self.assemble()
@@ -64,20 +76,24 @@ class WidgetTabButton(u.Button):
 
         padding_size = 2
         border = self._border_char * (len(self._tab_label) + padding_size * 2)
+        bborder = self._bborder_char * (len(self._tab_label) + padding_size * 2)
         cursor_position = len(border) + padding_size
 
-        self.top    = f'┌{border}┐\n'
-        self.middle =  '│{s}{0}{s}│\n'.format(self._tab_label, s=padding_size* ' ')
-        self.bottom = f'┴{border}┴'
+        #self.top    = f' {border}\n'
+        self.middle =  '{s}{0}{s}'.format(self._tab_label, s=padding_size* ' ')
+        #self.bottom = f'{bborder}'
 
         self._w = u.Pile([
-            u.Text(self.top[:-1]),
-            u.AttrWrap(u.Text(self.middle[:-1]), 'normal', 'selected'),
-            u.Text(self.bottom),
+            #u.Columns([
+            #u.Text(' '),
+            #u.AttrMap(u.Text(self.top[:-1]), 'normal', 'selected'),
+            #]),
+            u.AttrMap(u.Text(self.middle, wrap='clip'), 'normal', 'selected'),
+            #u.AttrMap(u.Text(self.bottom), 'selected'),
         ])
 
-        self._w = u.AttrMap(self._w, '', 'highlight')
+        self._w = u.AttrMap(self._w , 'normal', 'selected')
 
     @property
     def width(self):
-        return len(self.top)-1
+        return len(self.middle)

@@ -14,8 +14,16 @@ from widgetcl import WidgetCL
 class CombatantPalette:
     @staticmethod
     def colors():
-        return [("normal", "white", "black"),
-                ("selected", "black", "light cyan"),
+        return [("normal", "black", "dark gray"),
+                ("selected", "black", "light gray"),
+                ("bg", "white", "black"),
+                ("tabborder", "light gray", "black")
+               ]
+
+    @staticmethod
+    def colors256():
+        return [("normal", "black", "dark gray"),
+                ("selected", "black", "light gray"),
                 ("bg", "white", "black")
                ]
 
@@ -24,6 +32,7 @@ class Combatant(metaclass = u.signals.MetaSignals):
 
     #NOTE: Deal with highest level of the Application, Interface, Files, Threads
     def __init__(self, setup=False):
+        logging.debug('=====================================================')
         logging.debug('...starting.')
         self._tick = 0.1 #sec
         self._last_tick = time.time_ns()
@@ -72,8 +81,9 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
         u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
 
-        u.connect_signal(self, 'AppStart', self.frame.app_start)
         u.connect_signal(self.frame.tabs, 'TabSwitch', self.frame.body.tab_switch)
+
+        u.connect_signal(self, 'AppStart', self.frame.app_start)
 
     def run(self):
         try:
@@ -90,7 +100,7 @@ class Combatant(metaclass = u.signals.MetaSignals):
             logging.debug('quitting.')
 
         except BaseException as exc:
-            traceback.print_exception(exc, limit=2, file=sys.stdout)
+            traceback.print_exception(exc, limit=1, file=sys.stdout)
             self.signal_quit()
 
     def signal_cmd(self, data):
