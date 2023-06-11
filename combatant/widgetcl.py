@@ -2,12 +2,16 @@ import urwid as u
 import math, logging
 
 class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Quit', 'Dirty']
+    signals = ['Quit', 'Dirty', 'CMDMode', 'ExitCMDMode', 'CMD']
     _border_char = u'─'
 
-    def __init__(self, cmd_key=':'):
+    def __init__(self, cmd_key=':', cmdm_handler=None):
         self._cmd_key = cmd_key
+        self._cmds = []
         self.assemble()
+
+        if cmdm_handler != None:
+            u.connect_signal(self, 'CMDMode', cmdm_handler)
 
         super(WidgetCL, self).__init__(self._w)
 
@@ -45,13 +49,18 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
         self._w = u.AttrMap(self._wx, '', 'highlight')
 
-    def focus_cl(self, data):
-        logging.debug(f'focus_cl {data!r}')
-        logging.debug('clear cl')
+    def send_cmd(self):
+        cmd = self.edit_line.get_edit_text()
+        u.emit_signal(self, 'CMD', cmd)
+        self.cl_clear()
 
+    def cl_clear(self):
+        logging.debug('CL Clear')
         self.edit_line.clear()
         u.emit_signal(self, 'Dirty')
-        logging.debug('CL Dirty')
+
+    def focus_cl(self, d):
+        u.emit_signal(self, 'CMDMode')
 
     def win_change(self, colrows):
         cols, rows = colrows
@@ -59,15 +68,13 @@ class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self.assemble(cl_text=t, cols=cols, rows=rows)
 
 class WidgetCLButton(u.Button):
-    signals = ['click']
+    signals = ['click', 'CMDMode']
 
     _border_char = u'─'
 
     def __init__(self, cmd_label=':', on_press=None, user_data=None):
         self._cmd_label = cmd_label
         self.assemble()
-
-        super(u.Button, self).__init__(self._w)
 
         if on_press:
             u.connect_signal(self, 'click', on_press, user_data)
@@ -98,4 +105,4 @@ class WidgetCLButton(u.Button):
 class WidgetCLEdit(u.Edit):
     def clear(self):
         self.set_edit_text('')
-        #self._invalidate()
+        self._invalidate()

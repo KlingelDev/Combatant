@@ -57,13 +57,15 @@ class Combatant(metaclass = u.signals.MetaSignals):
         #self.uloop.set_alarm_in(1, self.frame.update_body)
 
         # Register and plug urwid/widget signals
-        u.register_signal(WidgetTabs, ['Dirty', 'TabSwitch'])
-        u.register_signal(WidgetBody, ['Dirty', 'Quit'])
-        u.register_signal(WidgetCL, ['Dirty', 'Quit'])
-        u.register_signal(self, ['WinChange', 'AppStart'])
+        u.register_signal(WidgetMain, WidgetMain.signals)
+        u.register_signal(WidgetTabs, WidgetTabs.signals)
+        u.register_signal(WidgetBody, WidgetBody.signals)
+        u.register_signal(WidgetCL, WidgetCL.signals)
+        u.register_signal(self, self.signals)
 
         u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
         u.connect_signal(self.frame.cl, 'Dirty', self.draw_screen)
+        u.connect_signal(self.frame.cl, 'CMD', self.signal_cmd)
         u.connect_signal(self.frame, 'Quit', self.signal_quit)
 
         u.connect_signal(self, 'WinChange', self.frame.body.win_change)
@@ -89,6 +91,11 @@ class Combatant(metaclass = u.signals.MetaSignals):
 
         except BaseException as exc:
             traceback.print_exception(exc, limit=2, file=sys.stdout)
+            self.signal_quit()
+
+    def signal_cmd(self, data):
+        logging.debug(f'CMD {data!r}')
+        if data == 'quit' or data == 'Quit':
             self.signal_quit()
 
     def draw_screen(self):
