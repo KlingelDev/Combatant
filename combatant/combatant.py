@@ -11,6 +11,8 @@ from widgetbody import WidgetBody
 from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
+from command import TWProcess, Command, Result
+
 class CombatantPalette:
     @staticmethod
     def colors():
