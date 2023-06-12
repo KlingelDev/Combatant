@@ -50,9 +50,9 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         for t in self._tab_buttons:
             if pt == t[0]:
                 logging.debug('t2 {0}'.format(repr(t[2].get_attr_map())))
-                t[2].set_attr_map({'normal': 'selected'})
+                t[2].set_attr_map({'tabnormal': 'tabselected'})
             else:
-                t[2].set_attr_map({'selected': 'normal'})
+                t[2].set_attr_map({'tabselected': 'tabnormal'})
 
         u.emit_signal(self, 'TabSwitch', pt)
         logging.debug('tabpress {0} {1}'.format(repr(w), repr(data)))
@@ -60,8 +60,6 @@ class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 class WidgetTabButton(u.Button):
     signals = ['click']
 
-    _border_char = u'▔'
-    _bborder_char = u'▁'
     def __init__(self, tab_label='TabLabel', on_press=None, user_data=None):
         self._tab_label = tab_label
         self.assemble()
@@ -75,19 +73,16 @@ class WidgetTabButton(u.Button):
         self._label = u.SelectableIcon("", 0)
 
         padding_size = 2
-        border = self._border_char * (len(self._tab_label) + padding_size * 2)
-        bborder = self._bborder_char * (len(self._tab_label) + padding_size * 2)
-        cursor_position = len(border) + padding_size
+        # border = self._border_char * (len(self._tab_label) + padding_size * 2)
+        # cursor_position = len(border) + padding_size
 
-        #self.top    = f' {border}\n'
         self.middle =  '{s}{0}{s}'.format(self._tab_label, s=padding_size* ' ')
-        #self.bottom = f'{bborder}'
 
         self._w = u.Pile([
-            u.AttrMap(u.Text(self.middle, wrap='clip'), 'normal', 'selected')
+            u.AttrMap(u.Text(self.middle, wrap='clip'), 'tabnormal', 'tabselected')
         ])
 
-        self._w = u.AttrMap(self._w , 'normal', 'selected')
+        self._w = u.AttrMap(self._w , 'tabnormal', 'tabselected')
 
     @property
     def width(self):

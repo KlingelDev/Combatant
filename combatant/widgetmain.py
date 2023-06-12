@@ -25,6 +25,7 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self.assemble()
 
         u.connect_signal(self, 'CMDMode', self.cmd_mode)
+        u.connect_signal(self, 'ExitCMDMode', self.exit_cmd_mode)
 
         super(WidgetMain, self).__init__(self._w)
 
@@ -82,6 +83,9 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._m_cl._wx.focus_position = 1
         self._m_cl.ed_col.focus_position = 1
         self._m_cl.cl_clear()
+
+    def exit_cmd_mode(self):
+        pass
 
     @property
     def body(self):

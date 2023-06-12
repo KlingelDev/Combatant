@@ -1,5 +1,7 @@
 import pudb
-import os, sys, traceback, signal, time
+
+import os, sys
+import time, re, traceback, signal
 
 import asyncio
 import logging
@@ -11,13 +13,21 @@ from widgetbody import WidgetBody
 from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
-from command import TW
+from command import TW, CommandSterilizationError, CommandError
+
+class TaskCreationError(Exception):
+    # Naughty boi exception
+    def __init__(self, cmd=''):
+        self.message = f"Cannot create task for cmd '{cmd}'"
+        super(Exception, self).__init__(self.message)
 
 class CombatantPalette:
     @staticmethod
     def colors():
         return [("normal", "black", "dark gray"),
                 ("selected", "black", "light gray"),
+                ("tabnormal", "black", "dark gray"),
+                ("tabselected", "black", "light gray"),
                 ("bg", "white", "black"),
                 ("tabborder", "light gray", "black")
                ]
@@ -109,25 +119,29 @@ class Combatant(metaclass = u.signals.MetaSignals):
             self.signal_quit()
 
     def signal_cmd(self, cmd):
+        # TODO add commands to switch tabs
         logging.debug(f'CMD {cmd!r}')
-        if cmd == 'quit' or cmd == 'Quit':
+        task = None
+        cquit_match = re.search('^[qQ]uit', cmd)
+        if cquit_match:
             self.signal_quit()
+            return 0
 
-        elif cmd in ['help', '--help']:
-            logging.debug('creating cmd help task')
-            task = \
-                self.asyncio_loop.create_task(TW.help(),
-                                              name='TWCMD')
-            task.add_done_callback(self.cmd_result)
-            self._tasks.add(task)
+        try:
+            task = self.asyncio_loop.create_task(TW.run(cmd), name=f'TWCMD {cmd!r}')
 
-        elif cmd in ['version', '--version']:
-            logging.debug('creating cmd task')
-            task = \
-                self.asyncio_loop.create_task(TW.version(),
-                                              name='TWCMD')
-            task.add_done_callback(self.cmd_result)
-            self._tasks.add(task)
+            if isinstance(task, asyncio.Task):
+                task.add_done_callback(self.cmd_result)
+                self._tasks.add(task)
+
+            else:
+                raise TaskCreationError(cmd)
+
+        except BaseException as exc:
+            logging.debug(f"Failed to create task for cmd '{cmd}'")
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
 
     def cmd_result(self, task):
         try:
@@ -136,6 +150,11 @@ class Combatant(metaclass = u.signals.MetaSignals):
                 'Cmd result: {0} len out ({1}); {2}...'.format(r[0],
                                                                len(r[1]),
                                 r[1][:200 if len(r[1])>=200 else len(r[1])]))
+
+        except CommandError as exc:
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
 
         except BaseException as exc:
             logging.debug(f'Task Error Traceback')
