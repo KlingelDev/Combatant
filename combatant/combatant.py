@@ -13,7 +13,7 @@ from widgetbody import WidgetBody
 from widgettabs import WidgetTabs
 from widgetcl import WidgetCL
 
-from command import TW, CommandSterilizationError, CommandError
+from twcommand import TimeW, CommandSterilizationError, CommandError
 
 class TaskCreationError(Exception):
     # Naughty boi exception
@@ -27,6 +27,8 @@ class CombatantPalette:
         return [("normal", "black", "dark gray"),
                 ("selected", "black", "light gray"),
                 ("tabnormal", "black", "dark gray"),
+                ('cmp_list', 'white', 'dark blue'),
+                ('cmp_list_hightlight', 'white,standout', 'dark blue'),
                 ("tabselected", "black", "light gray"),
                 ("bg", "white", "black"),
                 ("tabborder", "light gray", "black")
@@ -128,7 +130,8 @@ class Combatant(metaclass = u.signals.MetaSignals):
             return 0
 
         try:
-            task = self.asyncio_loop.create_task(TW.run(cmd), name=f'TWCMD {cmd!r}')
+            task = self.asyncio_loop.create_task(TimeW.run(cmd),
+                                                 name=f'TimeWCMD {cmd!r}')
 
             if isinstance(task, asyncio.Task):
                 task.add_done_callback(self.cmd_result)

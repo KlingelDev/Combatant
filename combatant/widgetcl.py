@@ -1,6 +1,11 @@
 import urwid as u
 import math, logging
 
+from twcommand import TimeWCommand
+
+class CLCommands:
+    supported = ['help', 'start', 'stop', 'config']
+
 class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Quit', 'Dirty', 'CMDMode', 'ExitCMDMode', 'CMD']
     _border_char = u'─'
@@ -103,7 +108,101 @@ class WidgetCLButton(u.Button):
     def width(self):
         return len(self.top)-1
 
-class WidgetCLEdit(u.Edit):
+class WidgetCLEdit(u.PopUpLauncher):
+    ucommand_map = u.CommandMap()
+    def __init__(self, caption='', wrap='clip'):
+        self._edit = u.Edit()
+        self._w = u.AttrWrap(self._edit, 'cl')
+
+        super(WidgetCLEdit, self).__init__(self._w)
+
+    def keypress(self, size, key):
+        logging.debug(f"CLEdit keypress '{key}'")
+        if not self.is_open():
+            self.open_pop_up()
+
+        super(WidgetCLEdit, self).keypress(size, key)
+
+    def catch_keypress(self, key):
+        logging.debug(f"CLEdit catch_keypress '{key}'")
+        if self._edit.valid_char(key):
+            self._edit.insert_text(key)
+
+        if not self.is_open():
+            self.open_pop_up()
+        return key
+
+    def is_open(self):
+        return self._pop_up_widget != None
+
+    def render(self, size, focus=False):
+        if self.is_open():
+            focus = True
+
+        return super(WidgetCLEdit, self).render(size, focus)
+
+    def create_pop_up(self):
+        return CMPPopUp(self.catch_keypress)
+
+    def get_pop_up_parameters(self):
+        #height = len(CLCommands.supported)
+        #width = max(len(x) for x in CLCommands.supported)
+        return {'left': 0,
+                'top': -(len(CLCommands.supported)),
+                'overlay_width': 30,
+                'overlay_height': len(CLCommands.supported)
+               }
+
+    def get_edit_text(self):
+        return self._edit.get_edit_text()
+
+    def set_edit_text(self, s):
+        self._edit.set_edit_text(s)
+        self._edit._invalidate()
+
     def clear(self):
         self.set_edit_text('')
-        self._invalidate()
+        self._edit._invalidate()
+
+class CMPPopUp(u.PopUpTarget):
+    """ Command completion PopUp """
+    def __init__(self, keypress_handle):
+        b = []
+        for c in CLCommands.supported:
+            b.append(CMPListItem(c))
+
+        logging.debug(f"CMPPopUp b '{b!r}'")
+        self._body = u.SimpleListWalker(b)
+        self._w = u.ListBox(self._body)
+        self._w = u.AttrMap(self._w, 'cmp_list')
+
+        self._keypress_handle = keypress_handle
+        super(CMPPopUp, self).__init__(self._w)
+
+    def keypress(self, size, key):
+        logging.debug(f"CMPPopUp keypress '{key}'")
+        key = self._keypress_handle(key)
+
+        if key:
+            return super(CMPPopUp, self).keypress(size, key)
+
+class CMPListItem(u.Text):
+    """ Command completion PopUp List Item """
+    _selectable = True
+    signals = ['click']
+
+    def keypress(self, size, key):
+        logging.debug(f"CMPListItem keypress '{key}'")
+        if self._command_map[key] != u.ACTIVATE:
+            return key
+
+        self._emit('click')
+
+    def mouse_event(self, size, event, button, x, y, focus):
+        logging.debug("CMPListItem click {0}".format(
+            repr([size, event, button, x,y,focus])))
+        if button != 1 or not u.util.is_mouse_press(event):
+            return False
+
+        self._emit('click')
+        return True

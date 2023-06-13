@@ -37,7 +37,9 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._frame = u.Frame(header = self._m_tabs,
                               body = self._m_body,
                               footer = self._m_cl)
-        self._w = u.AttrWrap(self._frame, 'bg')
+
+        # self._w = u.AttrWrap(self._frame, 'bg')
+        self._w = self._frame
 
     def app_start(self):
         t = self._tabs[0]
@@ -85,6 +87,9 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._m_cl.cl_clear()
 
     def exit_cmd_mode(self):
+        pass
+
+    def cmd_complete(self):
         pass
 
     @property
