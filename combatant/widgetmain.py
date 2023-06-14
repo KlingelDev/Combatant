@@ -1,9 +1,11 @@
 import logging
 import urwid as u
 
-from widgetcl import WidgetCL
+from widgetcl import WidgetCL, WidgetCLEdit
 from widgetbody import WidgetBody
 from widgettabs import WidgetTabs, WidgetTabButton
+
+from actionmanager import AM
 
 class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     signals = ['Quit', 'FocusCL', 'CMDMode', 'ExitCMDMode']
@@ -12,7 +14,6 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
     """
     def __init__(self):
         self._cmd_key = ':'
-        self._cmd_mode = False
 
         # Change out Tab/Body classes to implement special behavior
         # name, label, shortcut key, (WidgetTabButton Class), (WidgetCargo Class)
@@ -24,8 +25,9 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
         self.assemble()
 
+        u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
         u.connect_signal(self, 'CMDMode', self.cmd_mode)
-        u.connect_signal(self, 'ExitCMDMode', self.exit_cmd_mode)
+        u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
 
         super(WidgetMain, self).__init__(self._w)
 
@@ -47,29 +49,16 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._frame.focus_position = 'header'
         self._m_tabs._bc.focus_position = 1
         self._m_tabs.tbutton_press(self, (t[0], t[1]))
+        logging.debug(f'AppStart WidgetMain{AM!r}')
 
     def keypress(self, size, key):
         if key == 'ctl q' or key == 'ctrl Q':
             u.emit_signal(self, 'Quit')
             return
 
-        if not self._cmd_mode:
-            if key == self._cmd_key:
-                self._cmd_mode = True
-                u.emit_signal(self, 'CMDMode')
-                return
-
-        if self._cmd_mode:
-            if key == 'enter':
-                logging.debug('Send CMD')
-                self._m_cl.send_cmd()
-                return
-
-            if key == 'esc':
-                logging.debug('Exit CMDMode')
-                self._frame.set_focus('body')
-                self._cmd_mode = False
-                return
+        if key == self._cmd_key:
+            u.emit_signal(self, 'CMDMode', 1)
+            return
 
         # Tab hotkeys
         for t in self._tabs:
@@ -78,16 +67,20 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
         super(WidgetMain, self).keypress(size, key)
 
-    def cmd_mode(self):
-        logging.debug('Enter CMDMode')
-        self._cmd_mode = True
-        self._frame.focus_position = 'footer'
-        self._m_cl._wx.focus_position = 1
-        self._m_cl.ed_col.focus_position = 1
-        self._m_cl.cl_clear()
+    def cmd_mode(self, cmdm):
+        logging.debug(f'Handle CMDMode {cmdm!r}')
+        if cmdm:
+            logging.debug('Enter CMDMode')
+            self._cmd_mode = True
+            self._frame.focus_position = 'footer'
+            self._m_cl._wx.focus_position = 1
+            self._m_cl.ed_col.focus_position = 1
+            self._m_cl.cl_clear()
 
-    def exit_cmd_mode(self):
-        pass
+        else:
+            logging.debug('Main Exit CMDMode')
+            self._cmd_mode = False
+            self._frame.focus_position = 'body'
 
     def cmd_complete(self):
         pass

@@ -11,7 +11,10 @@ import urwid as u
 from widgetmain import WidgetMain
 from widgetbody import WidgetBody
 from widgettabs import WidgetTabs
-from widgetcl import WidgetCL
+from widgetcl import WidgetCL, WidgetCLEdit
+
+from actionmanager import SignalManager
+
 
 from twcommand import TimeW, CommandSterilizationError, CommandError
 
@@ -48,11 +51,11 @@ class Combatant(metaclass = u.signals.MetaSignals):
     def __init__(self, setup=False):
         logging.debug('=====================================================')
         logging.debug('...starting.')
+
         self._tick = 0.1 #sec
         self._last_tick = time.time_ns()
 
         self._tasks = set()
-        self.f = ''
 
         if setup:
             self.setup()
@@ -60,7 +63,8 @@ class Combatant(metaclass = u.signals.MetaSignals):
     def setup(self):
         self.ui = u.raw_display.Screen()
 
-        self.frame = WidgetMain()
+        self.signal_manager = SignalManager()
+        self.frame = WidgetMain(sm=self.signal_manager)
 
         self.asyncio_loop = asyncio.get_event_loop()
         self.aloop = u.AsyncioEventLoop(loop = self.asyncio_loop)
@@ -87,6 +91,7 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.register_signal(WidgetTabs, WidgetTabs.signals)
         u.register_signal(WidgetBody, WidgetBody.signals)
         u.register_signal(WidgetCL, WidgetCL.signals)
+        u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
         u.register_signal(self, self.signals)
 
         u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
@@ -99,6 +104,8 @@ class Combatant(metaclass = u.signals.MetaSignals):
         u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
 
         u.connect_signal(self.frame.tabs, 'TabSwitch', self.frame.body.tab_switch)
+        u.connect_signal(self.frame.cl.edit_line, 'ExitCMDMode',
+                         self.frame.cmd_mode)
 
         u.connect_signal(self, 'AppStart', self.frame.app_start)
 
@@ -119,6 +126,9 @@ class Combatant(metaclass = u.signals.MetaSignals):
         except BaseException as exc:
             traceback.print_exception(exc, limit=1, file=sys.stdout)
             self.signal_quit()
+
+    def tick(self):
+        self.signal_manager.process()
 
     def signal_cmd(self, cmd):
         # TODO add commands to switch tabs
