@@ -1,16 +1,16 @@
 import urwid as u
 import math, logging
 
+from widgets.widgetcombatant import CombatantWidget
 from twcommand import TimeWCommand
 
 class CLCommands:
     supported = ['help', 'start', 'stop', 'config']
 
-class WidgetCL(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Quit', 'Dirty', 'CMD']
+class WidgetCL(u.WidgetWrap, CombatantWidget):
     _border_char = u'─'
 
-    def __init__(self, cmd_key=':', cmdm_handler=None):
+    def __init__(self, cmd_key=':', cmdm_handler=None, sm=None):
         self._cmd_key = cmd_key
 
         self.assemble()

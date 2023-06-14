@@ -1,18 +1,18 @@
 import logging
 import urwid as u
 
-from widgetcl import WidgetCL, WidgetCLEdit
-from widgetbody import WidgetBody
-from widgettabs import WidgetTabs, WidgetTabButton
+from widgets.widgetbody import WidgetBody
+from widgets.widgetcl import WidgetCL, WidgetCLEdit
+from widgets.widgetcombatant import CombatantWidget
+from widgets.widgetbody import WidgetBody
+from widgets.widgettabs import WidgetTabs, WidgetTabButton
 
-from actionmanager import AM
-
-class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Quit', 'FocusCL', 'CMDMode', 'ExitCMDMode']
+class WidgetMain(u.WidgetWrap, CombatantWidget):
     """
     Houses the frame with tabline, body and command line
     """
-    def __init__(self):
+    def __init__(self, sm=None):
+        CombatantWidget.__init__(self, sm=sm)
         self._cmd_key = ':'
 
         # Change out Tab/Body classes to implement special behavior
@@ -25,16 +25,19 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
 
         self.assemble()
 
-        u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
-        u.connect_signal(self, 'CMDMode', self.cmd_mode)
-        u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
+        # u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
+        # u.connect_signal(self, 'CMDMode', self.cmd_mode)
+        # u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
 
-        super(WidgetMain, self).__init__(self._w)
+        u.WidgetWrap.__init__(self, self._w)
+        self.emit('Test', 123, 123)
 
     def assemble(self):
         self._m_tabs = WidgetTabs(tabs=self._tabs)
         self._m_body = WidgetBody(tabs=self._tabs)
-        self._m_cl = WidgetCL(cmd_key=self._cmd_key, cmdm_handler=self.cmd_mode)
+        self._m_cl = WidgetCL(cmd_key=self._cmd_key,
+                              cmdm_handler=self.cmd_mode,
+                              sm=self._sm)
 
         self._frame = u.Frame(header = self._m_tabs,
                               body = self._m_body,
@@ -49,7 +52,6 @@ class WidgetMain(u.WidgetWrap, metaclass = u.signals.MetaSignals):
         self._frame.focus_position = 'header'
         self._m_tabs._bc.focus_position = 1
         self._m_tabs.tbutton_press(self, (t[0], t[1]))
-        logging.debug(f'AppStart WidgetMain{AM!r}')
 
     def keypress(self, size, key):
         if key == 'ctl q' or key == 'ctrl Q':

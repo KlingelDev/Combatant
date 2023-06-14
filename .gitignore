@@ -3,5 +3,6 @@ combatant.egg-info/
 combatest/
 dist/
 combatant/__pycache__/
+__pychache__
 *.pypython3
 *.log

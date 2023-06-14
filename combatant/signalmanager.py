@@ -1,4 +1,5 @@
-import uuid, queue
+import logging
+import uuid
 
 class SignalConnectError(Exception):
     def __init__(self, signal=''):
@@ -8,15 +9,15 @@ class SignalConnectError(Exception):
 class SignalManager:
     def __init__(self):
         self.uuid = uuid.uuid4()
-        self._que = queue.Queue()
+        self._que = []
         self._registry = {}
 
     def register(self, name, desc):
-        self._registry[name] = SMSignal(signal_name, desc)
+        self._registry[name] = SMSignal(name, desc)
 
     def connect(self, caller, name, handler):
-        if name in self.registry:
-            self._registry[name].add_handler(handler)
+        if name in self._registry:
+            self._registry[name].add_handler(caller, handler)
 
         else:
             raise SignalConnectError(name)
@@ -31,9 +32,12 @@ class SignalManager:
     def process(self):
         """Process signals in the queue"""
 
+        logging.debug(f'Signal processing')
+
         #remove duplicates
         signals = []
         m = self.get()
+
         while m:
             found = 0
             for s in signals:
@@ -47,21 +51,23 @@ class SignalManager:
             m = self.get()
 
         for s in signals:
-            for r in self._registry[s]:
-                for h in r.handlers:
-                    h[0](*h[1:])
+            if s[0] in self._registry:
+                for h in self._registry[s[0]].handlers:
+                    h[1](*s[1:])
 
-    def put(self, signal, *args)
-        self._que.put((signal, *args))
+            else:
+                raise SignalConnectError(s[0])
+
+    def put(self, signal, *args):
+        logging.debug(f'Put signal {signal!r}')
+        self._que.append((signal, *args))
 
     def get(self):
         try:
-            m = self._que.get()
-            self._que.task_done()
-            return m
+            return self._que.pop()
 
-        except queue.Empty as empty:
-            return 0
+        except IndexError:
+            return False
 
 class SMSignal:
     def __init__(self, name, desc):
@@ -69,10 +75,10 @@ class SMSignal:
         self._desc = desc
         self._handlers = []
 
-    def add_handler(self, caller, handler)
+    def add_handler(self, caller, handler):
         self._handlers.append((caller, handler))
 
-    def remove_handler(self, handler, caller=None)
+    def remove_handler(self, handler, caller=None):
         for h in self._handlers:
             if caller != None and h[0] == caller:
                 self._handlers.remove(h)

@@ -8,13 +8,14 @@ import logging
 
 import urwid as u
 
-from widgetmain import WidgetMain
-from widgetbody import WidgetBody
-from widgettabs import WidgetTabs
-from widgetcl import WidgetCL, WidgetCLEdit
+from widgets import (WidgetBody,
+                     WidgetMain,
+                     WidgetTabs,
+                     WidgetCL,
+                     WidgetCLEdit)
 
-from actionmanager import SignalManager
-
+from signalmanager import SignalManager
+from signals import CombatantSignals
 
 from twcommand import TimeW, CommandSterilizationError, CommandError
 
@@ -44,15 +45,13 @@ class CombatantPalette:
                 ("bg", "white", "black")
                ]
 
-class Combatant(metaclass = u.signals.MetaSignals):
-    signals = ['AppStart', 'WinChange']
-
+class Combatant:
     #NOTE: Deal with highest level of the Application, Interface, Files, Threads
     def __init__(self, setup=False):
         logging.debug('=====================================================')
         logging.debug('...starting.')
 
-        self._tick = 0.1 #sec
+        self._tick = 1 #sec
         self._last_tick = time.time_ns()
 
         self._tasks = set()
@@ -74,8 +73,7 @@ class Combatant(metaclass = u.signals.MetaSignals):
                                 CombatantPalette.colors(),
                                 handle_mouse = True,
                                 event_loop = self.aloop,
-                                pop_ups = True
-                               )
+                                pop_ups = True)
 
         # SIGhandler setup
         self.asyncio_loop.add_signal_handler(signal.SIGWINCH, self.signal_winch)
@@ -83,40 +81,36 @@ class Combatant(metaclass = u.signals.MetaSignals):
         self.asyncio_loop.add_signal_handler(signal.SIGINT, self.signal_quit)
         self.asyncio_loop.add_signal_handler(signal.SIGQUIT, self.signal_quit)
 
-        # Setup tick
-        #self.uloop.set_alarm_in(1, self.frame.update_body)
+        # Register and plug signals
+        CombatantSignals.register_signals(sm=self.signal_manager)
 
-        # Register and plug urwid/widget signals
-        u.register_signal(WidgetMain, WidgetMain.signals)
-        u.register_signal(WidgetTabs, WidgetTabs.signals)
-        u.register_signal(WidgetBody, WidgetBody.signals)
-        u.register_signal(WidgetCL, WidgetCL.signals)
-        u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
-        u.register_signal(self, self.signals)
-
-        u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
-        u.connect_signal(self.frame.cl, 'Dirty', self.draw_screen)
-        u.connect_signal(self.frame.cl, 'CMD', self.signal_cmd)
-        u.connect_signal(self.frame, 'Quit', self.signal_quit)
-
-        u.connect_signal(self, 'WinChange', self.frame.body.win_change)
-        u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
-        u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
-
-        u.connect_signal(self.frame.tabs, 'TabSwitch', self.frame.body.tab_switch)
-        u.connect_signal(self.frame.cl.edit_line, 'ExitCMDMode',
-                         self.frame.cmd_mode)
-
-        u.connect_signal(self, 'AppStart', self.frame.app_start)
+        self.signal_manager.connect(self, 'Test', self.test)
+        # u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
+        # u.connect_signal(self.frame.cl, 'Dirty', self.draw_screen)
+        # u.connect_signal(self.frame.cl, 'CMD', self.signal_cmd)
+        # u.connect_signal(self.frame, 'Quit', self.signal_quit)
+        #
+        # u.connect_signal(self, 'WinChange', self.frame.body.win_change)
+        # u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
+        # u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
+        #
+        # u.connect_signal(self.frame.tabs, 'TabSwitch', self.frame.body.tab_switch)
+        # u.connect_signal(self.frame.cl.edit_line, 'ExitCMDMode',
+        #                  self.frame.cmd_mode)
+        #
+        # u.connect_signal(self, 'AppStart', self.frame.app_start)
 
     def run(self):
         try:
             # Do what needs to be done at first application start
-            u.emit_signal(self, 'AppStart')
+            # u.emit_signal(self, 'AppStart')
 
             # Let widgets know about winsize
             cols, rows = self.ui.get_cols_rows()
-            u.emit_signal(self, 'WinChange', (cols, rows))
+            # u.emit_signal(self, 'WinChange', (cols, rows))
+
+            # Setup tick
+            self.uloop.set_alarm_in(self._tick, self.tick)
 
             self.uloop.run()
 
@@ -127,8 +121,14 @@ class Combatant(metaclass = u.signals.MetaSignals):
             traceback.print_exception(exc, limit=1, file=sys.stdout)
             self.signal_quit()
 
-    def tick(self):
+    def test(self, a, b):
+        logging.debug(f'Test called {a} {b}')
+
+    def tick(self, c, u):
+        logging.debug(f'Call process')
         self.signal_manager.process()
+
+        self.uloop.set_alarm_in(self._tick, self.tick)
 
     def signal_cmd(self, cmd):
         # TODO add commands to switch tabs
