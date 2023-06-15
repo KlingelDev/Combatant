@@ -14,14 +14,20 @@ class WidgetMain(CombatantWidgetWrap):
     """
     def __init__(self, sm=None):
         self._cmd_key = ':'
-        self._sm=sm
-        # Change out Tab/Body classes to implement special behavior
-        # name, label, shortcut key, (WidgetTabButton Class), (WidgetCargo Class)
+        """Set command key"""
+
         self._tabs = [('time', 'Time', 'T', WidgetTabButton),
                       ('labels', 'Labels', 'L'),
                       ('modify', 'Modify', 'M'),
                       ('summary', 'Summary', 'S'),
                       ('config', 'Config', 'C')]
+        """
+        Change out Tab/Body classes to implement special behavior
+        ```
+        0     1      2             3                        4
+        name, label, shortcut key, (WidgetTabButton Class), (WidgetCargo Class)
+        ```
+        """
 
         self.assemble()
         super(WidgetMain, self).__init__(self._w, sm=sm)
@@ -31,6 +37,7 @@ class WidgetMain(CombatantWidgetWrap):
         # u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
 
     def assemble(self):
+        """Assemble widget"""
         self._m_tabs = WidgetTabs(tabs=self._tabs, sm=self._sm)
         self._m_body = WidgetBody(tabs=self._tabs, sm=self._sm)
         self._m_cl = WidgetCL(cmd_key=self._cmd_key,
@@ -45,6 +52,7 @@ class WidgetMain(CombatantWidgetWrap):
         self._w = self._frame
 
     def app_start(self):
+        """Perform at application start"""
         t = self._tabs[0]
         logging.debug(f'AppStart WidgetMain{t!r}')
         self._frame.focus_position = 'header'
@@ -68,6 +76,7 @@ class WidgetMain(CombatantWidgetWrap):
         super(WidgetMain, self).keypress(size, key)
 
     def cmd_mode(self, cmdm):
+        """Handle CMD Mode"""
         logging.debug(f'Handle CMDMode {cmdm!r}')
         if cmdm:
             logging.debug('Enter CMDMode')

@@ -6,13 +6,16 @@ from widgets.widgetcombatant import *
 from twcommand import TimeWCommand
 
 class WidgetCL(CombatantWidgetWrap):
+    """
+    Command line widget containing commandline button and text edit
+    """
     _border_char = u'─'
 
     def __init__(self, cmd_key=':', cmdm_handler=None, sm=None):
         self._cmd_key = cmd_key
         self.assemble()
 
-        super(WidgetCL, self).__init__(self._w, sm=sm)
+        super(WidgetCL, self).__init__(self._w)
 
         # if cmdm_handler != None:
         # u.connect_signal(self.edit_line, 'ExitCMDMode', self.handle_cmdm)
@@ -63,8 +66,7 @@ class WidgetCL(CombatantWidgetWrap):
         t = self.edit_line.get_edit_text()
         self.assemble(cl_text=t, cols=cols, rows=rows)
 
-class WidgetCLEdit(u.PopUpLauncher, metaclass = u.signals.MetaSignals):
-    signals = ['CMDMode', 'CMD', 'ExitCMDMode']
+class WidgetCLEdit(u.PopUpLauncher):
     ucommand_map = u.CommandMap()
 
     def __init__(self, caption='', wrap='clip'):
@@ -83,6 +85,7 @@ class WidgetCLEdit(u.PopUpLauncher, metaclass = u.signals.MetaSignals):
 
         super(WidgetCLEdit, self).keypress(size, key)
 
+    # catch keypresses of cmp popup
     def catch_keypress(self, key):
         logging.debug(f"CLEdit catch_keypress '{key}'")
         if self._edit.valid_char(key):

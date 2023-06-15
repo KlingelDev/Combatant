@@ -8,7 +8,7 @@ class WidgetTabs(CombatantWidgetWrap):
         self._tabs=tabs
         self.assemble()
 
-        super(WidgetTabs, self).__init__(self._w, sm=sm)
+        super(WidgetTabs, self).__init__(self._w)
 
     def assemble(self, cols=80, rows=45):
         self._tab_buttons = []

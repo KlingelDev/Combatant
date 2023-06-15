@@ -16,7 +16,12 @@ class CombatantWidget:
     def emit(self, signal, *args, **kwargs):
         self._sm.put(signal, *args, **kwargs)
 
+"""
+Urwid facades
+"""
 class CombatantWidgetWrap(u.WidgetWrap, CombatantWidget):
+    #sm: SignalManager
+    """Signal Manager"""
     def __init__(self, _w, sm=None):
         CombatantWidget.__init__(self, sm=sm)
         u.WidgetWrap.__init__(self, _w)
@@ -35,7 +40,7 @@ class CombatantEdit(u.Button, CombatantWidget):
         CombatantWidget.__init__(self, sm=sm)
         u.Edit.__init__(self, _w)
 
-class CombatantPopUp(u.Button, CombatantWidget):
+class CombatantPopUpLauncher(u.Button, CombatantWidget):
     def __init__(self, _w, sm=None):
         CombatantWidget.__init__(self, sm=sm)
         u.Edit.__init__(self, _w)

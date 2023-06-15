@@ -45,8 +45,16 @@ class CombatantPalette:
                 ("bg", "white", "black")
                ]
 
+"""
+Combatant
+"""
 class Combatant:
-    #NOTE: Deal with highest level of the Application, Interface, Files, Threads
+    """
+    Deal with highest level of the Application, Interface, Files, Threads
+    """
+    setup: bool
+    """Perform setup"""
+
     def __init__(self, setup=False):
         logging.debug('=====================================================')
         logging.debug('...starting.')
@@ -103,11 +111,11 @@ class Combatant:
     def run(self):
         try:
             # Do what needs to be done at first application start
-            # u.emit_signal(self, 'AppStart')
+            self.signal_manager.put('AppStart')
 
             # Let widgets know about winsize
             cols, rows = self.ui.get_cols_rows()
-            # u.emit_signal(self, 'WinChange', (cols, rows))
+            self.signal_manager.put('WinChange', (cols, rows))
 
             # Setup tick
             self.uloop.set_alarm_in(self._tick, self.tick)
@@ -125,6 +133,7 @@ class Combatant:
         logging.debug(f'Test called {a} {b}')
 
     def tick(self, c, u):
+        """ Perform per `tick` """
         logging.debug(f'Call process')
         self.signal_manager.process()
 
@@ -188,5 +197,5 @@ class Combatant:
     def signal_winch(self):
         cols, rows = self.ui.get_cols_rows()
         logging.debug('winch: %d x %d' % (cols, rows))
-        u.emit_signal(self, 'WinChange', (cols, rows))
+        self.signal_manager.put('WinChange', (cols, rows))
 
