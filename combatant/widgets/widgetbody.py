@@ -1,21 +1,20 @@
 import urwid as u
 import logging
 
-from widgets.widgetcombatant import CombatantWidget
+from widgets.widgetcombatant import *
 
-class WidgetBody(u.WidgetWrap, CombatantWidget):
+class WidgetBody(CombatantWidgetWrap):
     def __init__(self, tabs=[], sm=None):
-        CombatantWidget.__init__(self, sm=sm)
-
         self._tabs = tabs
+        self._sm=sm
         self.assemble()
 
-        u.WidgetWrap.__init__(self, self._w)
+        super(WidgetBody, self).__init__(self._w, sm=sm)
 
     def assemble(self):
-        self.cargo = {'EMPTY': WidgetCargo()}
+        self.cargo = {'EMPTY': WidgetCargo(sm=self._sm)}
         for t in self._tabs:
-            arg = {'txt': t[1]}
+            arg = {'txt': t[1], 'sm': self._sm}
             self.cargo[t[0]] = t[3](**arg) if len(t) == 5 else WidgetCargo(**arg)
 
         self._w = self.cargo['EMPTY']
@@ -26,10 +25,7 @@ class WidgetBody(u.WidgetWrap, CombatantWidget):
     def tab_switch(self, t):
         self._w = self.cargo[t]
 
-class WidgetCargo(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Dirty']
-
-    def __init__(self, txt=''):
+class WidgetCargo(CombatantWidgetWrap):
+    def __init__(self, txt='', sm=None):
         self._w = u.Filler(u.Text(txt))
-
-        super(WidgetCargo, self).__init__(self._w)
+        super(WidgetCargo, self).__init__(self._w, sm=sm)

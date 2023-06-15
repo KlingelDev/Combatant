@@ -1,24 +1,21 @@
 import urwid as u
 import math, logging
 
-from widgets.widgetcombatant import CombatantWidget
+from widgets.widgetcombatant import *
 
 from twcommand import TimeWCommand
 
-class WidgetCL(u.WidgetWrap, CombatantWidget):
+class WidgetCL(CombatantWidgetWrap):
     _border_char = u'─'
 
     def __init__(self, cmd_key=':', cmdm_handler=None, sm=None):
-        CombatantWidget.__init__(self, sm=sm)
-
         self._cmd_key = cmd_key
-
         self.assemble()
+
+        super(WidgetCL, self).__init__(self._w, sm=sm)
 
         # if cmdm_handler != None:
         # u.connect_signal(self.edit_line, 'ExitCMDMode', self.handle_cmdm)
-
-        u.WidgetWrap.__init__(self, self._w)
 
     def assemble(self, cl_text='timew command...', cols=80, rows=45):
         self.edit_line = WidgetCLEdit(caption='', wrap='clip')

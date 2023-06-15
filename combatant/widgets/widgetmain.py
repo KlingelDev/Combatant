@@ -1,20 +1,20 @@
 import logging
 import urwid as u
 
+from widgets.widgetcombatant import *
+
 from widgets.widgetbody import WidgetBody
 from widgets.widgetcl import WidgetCL, WidgetCLEdit
-from widgets.widgetcombatant import CombatantWidget
 from widgets.widgetbody import WidgetBody
 from widgets.widgettabs import WidgetTabs, WidgetTabButton
 
-class WidgetMain(u.WidgetWrap, CombatantWidget):
+class WidgetMain(CombatantWidgetWrap):
     """
     Houses the frame with tabline, body and command line
     """
     def __init__(self, sm=None):
-        CombatantWidget.__init__(self, sm=sm)
         self._cmd_key = ':'
-
+        self._sm=sm
         # Change out Tab/Body classes to implement special behavior
         # name, label, shortcut key, (WidgetTabButton Class), (WidgetCargo Class)
         self._tabs = [('time', 'Time', 'T', WidgetTabButton),
@@ -24,16 +24,15 @@ class WidgetMain(u.WidgetWrap, CombatantWidget):
                       ('config', 'Config', 'C')]
 
         self.assemble()
+        super(WidgetMain, self).__init__(self._w, sm=sm)
 
         # u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
         # u.connect_signal(self, 'CMDMode', self.cmd_mode)
         # u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
 
-        u.WidgetWrap.__init__(self, self._w)
-
     def assemble(self):
-        self._m_tabs = WidgetTabs(tabs=self._tabs)
-        self._m_body = WidgetBody(tabs=self._tabs)
+        self._m_tabs = WidgetTabs(tabs=self._tabs, sm=self._sm)
+        self._m_body = WidgetBody(tabs=self._tabs, sm=self._sm)
         self._m_cl = WidgetCL(cmd_key=self._cmd_key,
                               cmdm_handler=self.cmd_mode,
                               sm=self._sm)

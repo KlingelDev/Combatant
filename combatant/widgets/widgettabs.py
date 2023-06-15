@@ -1,16 +1,14 @@
 import urwid as u
 import math, logging
 
-from widgets.widgetcombatant import CombatantWidget
+from widgets.widgetcombatant import *
 
-class WidgetTabs(u.WidgetWrap, CombatantWidget):
+class WidgetTabs(CombatantWidgetWrap):
     def __init__(self, tabs=[], sm=None):
-        CombatantWidget.__init__(self, sm=sm)
-
         self._tabs=tabs
         self.assemble()
 
-        u.WidgetWrap.__init__(self, self._w)
+        super(WidgetTabs, self).__init__(self._w, sm=sm)
 
     def assemble(self, cols=80, rows=45):
         self._tab_buttons = []
@@ -60,14 +58,19 @@ class WidgetTabs(u.WidgetWrap, CombatantWidget):
         u.emit_signal(self, 'TabSwitch', pt)
         logging.debug('tabpress {0} {1}'.format(repr(w), repr(data)))
 
-class WidgetTabButton(u.Button):
-    signals = ['click']
+class WidgetTabButton(CombatantButton):
+    def __init__(self, tab_label='TabLabel',
+                       on_press=None,
+                       user_data=None,
+                       sm=None):
 
-    def __init__(self, tab_label='TabLabel', on_press=None, user_data=None):
         self._tab_label = tab_label
         self.assemble()
 
-        super(u.Button, self).__init__(self._w)
+        super(WidgetTabButton, self).__init__(self._w, label=tab_label,
+                                                       on_press=on_press,
+                                                       user_data=user_data,
+                                                       sm=sm)
 
         if on_press:
             u.connect_signal(self, 'click', on_press, user_data)
