@@ -122,7 +122,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         cmd = self.get_edit_text()
         self._cmds.append(cmd)
         self.emit('CMD', cmd)
-        self.edit_line.clear()
+        self.clear()
 
     def cmp_is_open(self):
         return self._pop_up_widget != None
