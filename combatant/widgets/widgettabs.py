@@ -1,13 +1,16 @@
 import urwid as u
 import math, logging
 
-class WidgetTabs(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Dirty', 'TabSwitch']
+from widgets.widgetcombatant import CombatantWidget
 
-    def __init__(self, tabs=[]):
+class WidgetTabs(u.WidgetWrap, CombatantWidget):
+    def __init__(self, tabs=[], sm=None):
+        CombatantWidget.__init__(self, sm=sm)
+
         self._tabs=tabs
         self.assemble()
-        super(WidgetTabs, self).__init__(self._w)
+
+        u.WidgetWrap.__init__(self, self._w)
 
     def assemble(self, cols=80, rows=45):
         self._tab_buttons = []

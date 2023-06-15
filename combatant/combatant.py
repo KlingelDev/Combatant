@@ -84,21 +84,21 @@ class Combatant:
         # Register and plug signals
         CombatantSignals.register_signals(sm=self.signal_manager)
 
-        self.signal_manager.connect(self, 'Test', self.test)
-        # u.connect_signal(self.frame.body, 'Dirty', self.draw_screen)
-        # u.connect_signal(self.frame.cl, 'Dirty', self.draw_screen)
-        # u.connect_signal(self.frame.cl, 'CMD', self.signal_cmd)
-        # u.connect_signal(self.frame, 'Quit', self.signal_quit)
-        #
-        # u.connect_signal(self, 'WinChange', self.frame.body.win_change)
-        # u.connect_signal(self, 'WinChange', self.frame.tabs.win_change)
-        # u.connect_signal(self, 'WinChange', self.frame.cl.win_change)
-        #
-        # u.connect_signal(self.frame.tabs, 'TabSwitch', self.frame.body.tab_switch)
-        # u.connect_signal(self.frame.cl.edit_line, 'ExitCMDMode',
-        #                  self.frame.cmd_mode)
-        #
-        # u.connect_signal(self, 'AppStart', self.frame.app_start)
+        self.signal_manager.connect(self.frame.body, 'Dirty', self.draw_screen)
+        self.signal_manager.connect(self.frame.cl, 'Dirty', self.draw_screen)
+        self.signal_manager.connect(self.frame.cl, 'CMD', self.signal_cmd)
+        self.signal_manager.connect(self.frame, 'Quit', self.signal_quit)
+
+        self.signal_manager.connect(self, 'WinChange', self.frame.body.win_change)
+        self.signal_manager.connect(self, 'WinChange', self.frame.tabs.win_change)
+        self.signal_manager.connect(self, 'WinChange', self.frame.cl.win_change)
+
+        self.signal_manager.connect(self.frame.tabs,
+                                    'TabSwitch',
+                                    self.frame.body.tab_switch)
+        # self.signal_manager.connect(self.frame.cl.edit_line, 'ExitCMDMode',
+        #                             self.frame.cmd_mode)
+        self.signal_manager.connect(self, 'AppStart', self.frame.app_start)
 
     def run(self):
         try:

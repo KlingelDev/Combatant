@@ -1,14 +1,16 @@
 import urwid as u
 import logging
 
-class WidgetBody(u.WidgetWrap, metaclass = u.signals.MetaSignals):
-    signals = ['Quit', 'Dirty']
+from widgets.widgetcombatant import CombatantWidget
 
-    def __init__(self, tabs=[]):
+class WidgetBody(u.WidgetWrap, CombatantWidget):
+    def __init__(self, tabs=[], sm=None):
+        CombatantWidget.__init__(self, sm=sm)
+
         self._tabs = tabs
         self.assemble()
 
-        super(WidgetBody, self).__init__(self._w)
+        u.WidgetWrap.__init__(self, self._w)
 
     def assemble(self):
         self.cargo = {'EMPTY': WidgetCargo()}

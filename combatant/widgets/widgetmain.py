@@ -30,7 +30,6 @@ class WidgetMain(u.WidgetWrap, CombatantWidget):
         # u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
 
         u.WidgetWrap.__init__(self, self._w)
-        self.emit('Test', 123, 123)
 
     def assemble(self):
         self._m_tabs = WidgetTabs(tabs=self._tabs)

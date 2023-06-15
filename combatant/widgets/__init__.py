@@ -1,5 +1,5 @@
-from widgets.widgetcombatant import CombatantWidget
-from widgets.widgetbody import WidgetBody
-from widgets.widgetmain import WidgetMain
-from widgets.widgetcl import WidgetCL, WidgetCLEdit
-from widgets.widgettabs import WidgetTabs
+from widgets.widgetcombatant import *
+from widgets.widgetbody import *
+from widgets.widgetmain import *
+from widgets.widgetcl import *
+from widgets.widgettabs import *
