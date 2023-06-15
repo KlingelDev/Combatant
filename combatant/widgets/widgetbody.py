@@ -1,7 +1,7 @@
 import urwid as u
 import logging
 
-from widgets.widgetcombatant import *
+from .widgetcombatant import *
 
 class WidgetBody(CombatantWidgetWrap):
     def __init__(self, tabs=[], sm=None):

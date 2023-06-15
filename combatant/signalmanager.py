@@ -7,6 +7,9 @@ class SignalConnectError(Exception):
         super(Exception, self).__init__(self.message)
 
 class SignalManager:
+    """
+    SignalManger
+    """
     def __init__(self):
         self.uuid = uuid.uuid4()
         self._que = []

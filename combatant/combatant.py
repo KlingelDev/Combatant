@@ -129,9 +129,6 @@ class Combatant:
             traceback.print_exception(exc, limit=1, file=sys.stdout)
             self.signal_quit()
 
-    def test(self, a, b):
-        logging.debug(f'Test called {a} {b}')
-
     def tick(self, c, u):
         """ Perform per `tick` """
         logging.debug(f'Call process')

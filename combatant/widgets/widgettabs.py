@@ -1,7 +1,7 @@
 import urwid as u
 import math, logging
 
-from widgets.widgetcombatant import *
+from .widgetcombatant import *
 
 class WidgetTabs(CombatantWidgetWrap):
     def __init__(self, tabs=[], sm=None):

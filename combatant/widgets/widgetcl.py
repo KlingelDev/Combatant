@@ -1,7 +1,7 @@
 import urwid as u
 import math, logging
 
-from widgets.widgetcombatant import *
+from .widgetcombatant import *
 
 from twcommand import TimeWCommand
 

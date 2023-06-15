@@ -1,12 +1,12 @@
 import logging
 import urwid as u
 
-from widgets.widgetcombatant import *
+from .widgetcombatant import *
 
-from widgets.widgetbody import WidgetBody
-from widgets.widgetcl import WidgetCL, WidgetCLEdit
-from widgets.widgetbody import WidgetBody
-from widgets.widgettabs import WidgetTabs, WidgetTabButton
+from .widgetbody import WidgetBody
+from .widgetcl import WidgetCL, WidgetCLEdit
+from .widgetbody import WidgetBody
+from .widgettabs import WidgetTabs, WidgetTabButton
 
 class WidgetMain(CombatantWidgetWrap):
     """

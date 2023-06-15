@@ -3,6 +3,9 @@ import logging
 
 from combatant import Combatant
 
+"""
+Combatant Main
+"""
 def main():
     logging.basicConfig(filename = 'debug.log', encoding = 'utf-8', level =
                         logging.DEBUG)
