@@ -46,6 +46,9 @@ class WidgetTabs(CombatantWidgetWrap):
         self.assemble(cols=cols, rows=rows)
 
     def tbutton_press(self, w, data):
+        """
+        Tab button press, switch cargo in `WigetMain` body.
+        """
         pt = data[0]
         logging.debug('tabl {0}'.format(pt))
         for t in self._tab_buttons:

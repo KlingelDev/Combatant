@@ -59,7 +59,6 @@ class SignalManager:
                 raise SignalConnectError(s[0])
 
     def put(self, signal, *args):
-        logging.debug(f'Put signal {signal!r}')
         self._que.append((signal, *args))
 
     def get(self):

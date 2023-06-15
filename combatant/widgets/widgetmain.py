@@ -61,11 +61,11 @@ class WidgetMain(CombatantWidgetWrap):
 
     def keypress(self, size, key):
         if key == 'ctl q' or key == 'ctrl Q':
-            u.emit_signal(self, 'Quit')
+            self.emit('Quit')
             return
 
         if key == self._cmd_key:
-            u.emit_signal(self, 'CMDMode', 1)
+            self.emit('CMDMode', 1)
             return
 
         # Tab hotkeys

@@ -71,6 +71,8 @@ class Combatant:
         self.ui = u.raw_display.Screen()
 
         self.signal_manager = SignalManager()
+        CombatantSignals.register_signals(sm=self.signal_manager)
+
         self.frame = WidgetMain(sm=self.signal_manager)
 
         self.asyncio_loop = asyncio.get_event_loop()
@@ -90,7 +92,6 @@ class Combatant:
         self.asyncio_loop.add_signal_handler(signal.SIGQUIT, self.signal_quit)
 
         # Register and plug signals
-        CombatantSignals.register_signals(sm=self.signal_manager)
 
         self.signal_manager.connect(self.frame.body, 'Dirty', self.draw_screen)
         self.signal_manager.connect(self.frame.cl, 'Dirty', self.draw_screen)

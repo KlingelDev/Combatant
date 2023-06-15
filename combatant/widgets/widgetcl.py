@@ -17,15 +17,17 @@ class WidgetCL(CombatantWidgetWrap):
 
         super(WidgetCL, self).__init__(self._w)
 
-        # if cmdm_handler != None:
-        # u.connect_signal(self.edit_line, 'ExitCMDMode', self.handle_cmdm)
+        if cmdm_handler != None:
+            self.connect_signal(self.edit_line, 'CMDMode', cmdm_handler)
+            self.connect_signal(self._cl_button, 'CMDMode', cmdm_handler)
 
     def assemble(self, cl_text='timew command...', cols=80, rows=45):
-        self.edit_line = WidgetCLEdit(caption='', wrap='clip')
+        self.edit_line = WidgetCLEdit(caption='', wrap='clip', sm=self._sm)
         self.edit_line.set_edit_text(cl_text)
 
         self._cl_button = WidgetCLButton(cmd_label = self._cmd_key,
-                                         on_press = self.focus_cl)
+                                         on_press = self.focus_cl,
+                                         sm=self._sm)
         clb_w = self._cl_button.width
         label = ''
         padding_size = round(cols-clb_w-1)
@@ -56,20 +58,19 @@ class WidgetCL(CombatantWidgetWrap):
     def cl_clear(self):
         logging.debug('CL Clear')
         self.edit_line.clear()
-        u.emit_signal(self, 'Dirty')
 
     def focus_cl(self, d):
-        u.emit_signal(self, 'CMDMode', 1)
+        self.emit('CMDMode', 1)
 
     def win_change(self, colrows):
         cols, rows = colrows
         t = self.edit_line.get_edit_text()
         self.assemble(cl_text=t, cols=cols, rows=rows)
 
-class WidgetCLEdit(u.PopUpLauncher):
+class WidgetCLEdit(CombatantPopUpLauncher):
     ucommand_map = u.CommandMap()
 
-    def __init__(self, caption='', wrap='clip'):
+    def __init__(self, caption='', wrap='clip', sm=None):
         self._cmd_mode = False
         self._cmds = []
 
@@ -79,14 +80,24 @@ class WidgetCLEdit(u.PopUpLauncher):
         super(WidgetCLEdit, self).__init__(self._w)
 
     def keypress(self, size, key):
+        """
+        Open autocompletion popup and let it handle keypress via
+        `catch_keypress`.
+        """
         logging.debug(f"CLEdit keypress '{key}'")
         if not self.cmp_is_open():
             self.open_pop_up()
 
+        if key == 'esc':
+            self._cmd_mode = False
+            self.emit('CMDMode', 0)
+
         super(WidgetCLEdit, self).keypress(size, key)
 
-    # catch keypresses of cmp popup
     def catch_keypress(self, key):
+        """
+        Catches keypresses of autocompletion popup.
+        """
         logging.debug(f"CLEdit catch_keypress '{key}'")
         if self._edit.valid_char(key):
             self._edit.insert_text(key)
@@ -103,14 +114,14 @@ class WidgetCLEdit(u.PopUpLauncher):
         if key == 'esc':
             logging.debug('Send ExitCMDMode 0')
             self._cmd_mode = False
-            u.emit_signal(self, 'ExitCMDMode', 0)
+            self.emit('CMDMode', 0)
 
         return key
 
     def send_cmd(self):
         cmd = self.get_edit_text()
         self._cmds.append(cmd)
-        u.emit_signal(self, 'CMD', cmd)
+        self.emit('CMD', cmd)
         self.edit_line.clear()
 
     def cmp_is_open(self):
@@ -188,12 +199,10 @@ class CMPListItem(u.Text):
         self._emit('click')
         return True
 
-class WidgetCLButton(u.Button):
-    signals = ['click', 'CMDMode']
-
+class WidgetCLButton(CombatantButton):
     _border_char = u'─'
 
-    def __init__(self, cmd_label=':', on_press=None, user_data=None):
+    def __init__(self, cmd_label=':', on_press=None, user_data=None, sm=None):
         self._cmd_label = cmd_label
         self.assemble()
 
