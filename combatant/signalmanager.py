@@ -34,10 +34,7 @@ class SignalManager:
 
     def process(self):
         """Process signals in the queue"""
-
-        logging.debug(f'Signal processing')
-
-        #remove duplicates
+       #remove duplicates
         signals = []
         m = self.get()
 

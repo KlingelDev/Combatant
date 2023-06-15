@@ -50,12 +50,11 @@ class WidgetTabs(CombatantWidgetWrap):
         logging.debug('tabl {0}'.format(pt))
         for t in self._tab_buttons:
             if pt == t[0]:
-                logging.debug('t2 {0}'.format(repr(t[2].get_attr_map())))
                 t[2].set_attr_map({'tabnormal': 'tabselected'})
             else:
                 t[2].set_attr_map({'tabselected': 'tabnormal'})
 
-        u.emit_signal(self, 'TabSwitch', pt)
+        self.emit('TabSwitch', pt)
         logging.debug('tabpress {0} {1}'.format(repr(w), repr(data)))
 
 class WidgetTabButton(CombatantButton):

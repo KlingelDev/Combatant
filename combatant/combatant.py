@@ -59,7 +59,7 @@ class Combatant:
         logging.debug('=====================================================')
         logging.debug('...starting.')
 
-        self._tick = 1 #sec
+        self._tick = .1 #sec
         self._last_tick = time.time_ns()
 
         self._tasks = set()
@@ -101,11 +101,12 @@ class Combatant:
         self.signal_manager.connect(self, 'WinChange', self.frame.tabs.win_change)
         self.signal_manager.connect(self, 'WinChange', self.frame.cl.win_change)
 
-        self.signal_manager.connect(self.frame.tabs,
-                                    'TabSwitch',
+        self.signal_manager.connect(self.frame.tabs, 'TabSwitch',
                                     self.frame.body.tab_switch)
+
         # self.signal_manager.connect(self.frame.cl.edit_line, 'ExitCMDMode',
         #                             self.frame.cmd_mode)
+
         self.signal_manager.connect(self, 'AppStart', self.frame.app_start)
 
     def run(self):
@@ -131,7 +132,6 @@ class Combatant:
 
     def tick(self, c, u):
         """ Perform per `tick` """
-        logging.debug(f'Call process')
         self.signal_manager.process()
 
         self.uloop.set_alarm_in(self._tick, self.tick)
