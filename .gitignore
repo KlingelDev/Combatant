@@ -1,8 +1,14 @@
+*__pychache__/
+*.py[cod]
+
+bin/
 build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+*.egg
 combatant.egg-info/
 combatest/
-dist/
-combatant/__pycache__/
-__pychache__
 *.pypython3
 *.log
