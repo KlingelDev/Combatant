@@ -3,8 +3,15 @@ import urwid as u
 import logging
 
 class CombatantWidget:
+    def __new__(cls, *args, **kwargs):
+        obj = object.__new__(cls)
+        if 'sm' in kwargs:
+            obj._sm = kwargs['sm']
+        return obj
+
     def __init__(self, sm=None):
-        self._sm = sm
+        if sm != None:
+            self._sm = sm
 
     def emit(self, signal, *args, **kwargs):
         self._sm.put(signal, *args, **kwargs)

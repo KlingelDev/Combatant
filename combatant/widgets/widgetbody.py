@@ -6,10 +6,9 @@ from widgets.widgetcombatant import *
 class WidgetBody(CombatantWidgetWrap):
     def __init__(self, tabs=[], sm=None):
         self._tabs = tabs
-        self._sm=sm
         self.assemble()
 
-        super(WidgetBody, self).__init__(self._w, sm=sm)
+        super(WidgetBody, self).__init__(self._w)
 
     def assemble(self):
         self.cargo = {'EMPTY': WidgetCargo(sm=self._sm)}
@@ -28,4 +27,4 @@ class WidgetBody(CombatantWidgetWrap):
 class WidgetCargo(CombatantWidgetWrap):
     def __init__(self, txt='', sm=None):
         self._w = u.Filler(u.Text(txt))
-        super(WidgetCargo, self).__init__(self._w, sm=sm)
+        super(WidgetCargo, self).__init__(self._w)
