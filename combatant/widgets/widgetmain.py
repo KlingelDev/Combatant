@@ -32,10 +32,6 @@ class WidgetMain(CombatantWidgetWrap):
         self.assemble()
         super(WidgetMain, self).__init__(self._w, sm=sm)
 
-        # u.register_signal(WidgetCLEdit, WidgetCLEdit.signals)
-        # u.connect_signal(self, 'CMDMode', self.cmd_mode)
-        # u.connect_signal(self._m_cl.edit_line, 'ExitCMDMode', self.cmd_mode)
-
     def assemble(self):
         """Assemble widget"""
         self._m_tabs = WidgetTabs(tabs=self._tabs, sm=self._sm)
@@ -48,7 +44,6 @@ class WidgetMain(CombatantWidgetWrap):
                               body = self._m_body,
                               footer = self._m_cl)
 
-        # self._w = u.AttrWrap(self._frame, 'bg')
         self._w = self._frame
 
     def app_start(self):
@@ -89,7 +84,8 @@ class WidgetMain(CombatantWidgetWrap):
         else:
             logging.debug('Main Exit CMDMode')
             self._cmd_mode = False
-            self._frame.focus_position = 'body'
+            self._w.focus_position = 'body'
+            self._m_body.focus = 0
 
     def cmd_complete(self):
         pass

@@ -3,10 +3,14 @@ import urwid as u
 import logging
 
 class CombatantWidget:
+    """
+    Superclass for Widgets used by Combatant
+    """
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(cls)
         if 'sm' in kwargs:
             obj._sm = kwargs['sm']
+            obj._w = None
         return obj
 
     def __init__(self, sm=None):
@@ -18,6 +22,11 @@ class CombatantWidget:
 
     def connect_signal(self, caller, name, handler):
         self._sm.connect(caller, name, handler)
+
+    def focus(self):
+        """Sets focus on main widget _w, override will be needed"""
+        self._w.focus_position=0
+
 """
 Urwid facades
 """

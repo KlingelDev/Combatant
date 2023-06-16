@@ -24,7 +24,15 @@ class WidgetBody(CombatantWidgetWrap):
     def tab_switch(self, t):
         self._w = self.cargo[t]
 
+    def focus(self):
+        self._w.focus()
+
 class WidgetCargo(CombatantWidgetWrap):
     def __init__(self, txt='', sm=None):
-        self._w = u.Filler(u.Text(txt))
+        self.txt = u.Filler(u.Text(txt))
+        self._w = u.Pile([self.txt])
         super(WidgetCargo, self).__init__(self._w)
+
+    def focus(self):
+        self._w.focus_position = 0
+

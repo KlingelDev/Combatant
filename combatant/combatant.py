@@ -91,7 +91,6 @@ class Combatant:
         self.asyncio_loop.add_signal_handler(signal.SIGQUIT, self.signal_quit)
 
         # Register and plug signals
-
         self.signal_manager.connect(self.frame.body, 'Dirty', self.draw_screen)
         self.signal_manager.connect(self.frame.cl, 'Dirty', self.draw_screen)
         self.signal_manager.connect(self.frame.cl, 'CMD', self.signal_cmd)
@@ -103,9 +102,6 @@ class Combatant:
 
         self.signal_manager.connect(self.frame.tabs, 'TabSwitch',
                                     self.frame.body.tab_switch)
-
-        # self.signal_manager.connect(self.frame.cl.edit_line, 'ExitCMDMode',
-        #                             self.frame.cmd_mode)
 
         self.signal_manager.connect(self, 'AppStart', self.frame.app_start)
 
@@ -182,6 +178,7 @@ class Combatant:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
         self._tasks.discard(task)
+        # TODO self._frame.cmd_complete
 
     def draw_screen(self):
         logging.debug('draw screen')
