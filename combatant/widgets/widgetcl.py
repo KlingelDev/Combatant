@@ -68,6 +68,10 @@ class WidgetCL(CombatantWidgetWrap):
         self.assemble(cl_text=t, cols=cols, rows=rows)
 
 class WidgetCLEdit(CombatantPopUpLauncher):
+    """
+        WidgetCLEdit
+        AutoCmp - Credits jakun stackoverflow.com/questions/58319414
+    """
     ucommand_map = u.CommandMap()
 
     def __init__(self, caption='', wrap='clip', sm=None):
@@ -102,11 +106,20 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         if self._edit.valid_char(key):
             self._edit.insert_text(key)
 
-        elif key == u.CURSOR_LEFT:
-            pass
+        elif cmd == u.CURSOR_LEFT:
+            p = self._w.edit_pos
+            if p == 0:
+                return key
+            p = u.move_prev_char(self._w.edit_text, 0, p)
+            self._w.set_edit_pos(p)
 
         elif cmd == u.CURSOR_RIGHT:
-            pass
+            p = self._w.edit_pos
+            if p >= len(self._w.edit_text):
+                return key
+            p = u.move_next_char(self._w.edit_text, p,
+                                 len(self._w.edit_text))
+            self._w.set_edit_pos(p)
 
         elif key == "backspace":
             if not self._w._delete_highlighted():
@@ -122,7 +135,18 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                 self._w.set_edit_pos(p)
 
         elif key == "delete":
-            pass
+            self._w.pref_col_maxcol = None, None
+            if not self._w._delete_highlighted():
+                p = self._w.edit_pos
+                if p >= len(self._w.edit_text):
+                    return key
+
+                et = self._w.edit_text
+                ep = self._w.edit_pos
+
+                p = u.move_next_char(et, p, len(et))
+
+                self._w.set_edit_text(et[:ep] +  et[p:])
 
         elif key == 'esc':
             logging.debug('Send ExitCMDMode 0')
