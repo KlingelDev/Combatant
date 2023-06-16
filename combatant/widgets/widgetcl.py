@@ -148,6 +148,12 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
                 self._w.set_edit_text(et[:ep] +  et[p:])
 
+        elif key == "home":
+            self._w.set_edit_pos(0)
+
+        elif key == "end":
+            self._w.set_edit_pos(len(self._w.edit_text))
+
         elif key == 'esc':
             logging.debug('Send ExitCMDMode 0')
             if self.cmp_is_open():
