@@ -95,23 +95,46 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         Catches keypresses of autocompletion popup.
         """
         logging.debug(f"CLEdit catch_keypress '{key}'")
-        if self._edit.valid_char(key):
-            self._edit.insert_text(key)
-
         if not self.cmp_is_open():
             self.open_pop_up()
 
-        if key == 'enter':
-            logging.debug('Send CMD')
-            self._cmd_mode = True
-            self.send_cmd()
-            return
+        cmd = self._command_map[key]
+        if self._edit.valid_char(key):
+            self._edit.insert_text(key)
 
-        if key == 'esc':
+        elif key == u.CURSOR_LEFT:
+            pass
+
+        elif cmd == u.CURSOR_RIGHT:
+            pass
+
+        elif key == "backspace":
+            if not self._w._delete_highlighted():
+                p = self._w.edit_pos
+                if p == 0:
+                    return key
+                p = u.move_prev_char(self._w.edit_text,0,p)
+
+                et = self._w.edit_text
+                ep = self._w.edit_pos
+
+                self._w.set_edit_text(et[:p] + et[ep:])
+                self._w.set_edit_pos(p)
+
+        elif key == "delete":
+            pass
+
+        elif key == 'esc':
             logging.debug('Send ExitCMDMode 0')
             if self.cmp_is_open():
                 self.close_pop_up()
             self.emit('CMDMode', 0)
+
+        elif key == 'enter':
+            logging.debug('Send CMD')
+            self._cmd_mode = True
+            self.send_cmd()
+            return
 
         return key
 
