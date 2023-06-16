@@ -20,7 +20,6 @@ from signals import CombatantSignals
 from twcommand import TimeW, CommandSterilizationError, CommandError
 
 class TaskCreationError(Exception):
-    # Naughty boi exception
     def __init__(self, cmd=''):
         self.message = f"Cannot create task for cmd '{cmd}'"
         super(Exception, self).__init__(self.message)

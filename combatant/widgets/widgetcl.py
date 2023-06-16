@@ -88,10 +88,6 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         if not self.cmp_is_open():
             self.open_pop_up()
 
-        if key == 'esc':
-            self._cmd_mode = False
-            self.emit('CMDMode', 0)
-
         super(WidgetCLEdit, self).keypress(size, key)
 
     def catch_keypress(self, key):
@@ -113,7 +109,8 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
         if key == 'esc':
             logging.debug('Send ExitCMDMode 0')
-            self._cmd_mode = False
+            if self.cmp_is_open():
+                self.close_pop_up()
             self.emit('CMDMode', 0)
 
         return key

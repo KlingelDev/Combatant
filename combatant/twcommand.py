@@ -14,11 +14,17 @@ class CommandSterilizationError(Exception):
         super(Exception, self).__init__(self.message)
 
 class TimeWCommand:
+    """
+    Available/implemented timew commands. Information for command completion.
+    """
     alias = ['timew', 'timewarrior']
     supported_commands = \
      ['start', 'stop', 'version', 'help']
 
 class TimeW:
+    """
+    Static Class with methods that control timewarrior.
+    """
     p_stdout = subprocess.PIPE
     p_stdin = subprocess.PIPE
     p_stderr = subprocess.PIPE
