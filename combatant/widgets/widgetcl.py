@@ -78,6 +78,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         self._cmd_mode = False
         self._cmds = []
 
+        self.cmp_pos = 0
         self.cmp_length = 20
         """Autocomplete popup width"""
 
@@ -204,7 +205,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         l = 1 if l == 0 else l
 
         logging.debug(f"height '{l!r}'")
-        return {'left': 0,
+        return {'left': self.cmp_pos,
                 'top': -(l),
                 'overlay_width': self.cmp_length,
                 'overlay_height': l
@@ -216,6 +217,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         """
         # Get strlength for window size
         cmpl = 0
+        self.cmp_pos = 0
 
         ep = self._w.edit_pos
         et = self._w.edit_text
@@ -236,6 +238,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             # Cut from search_text commands we already have
             cut_pos=m.spans()[-1][-1]
             search_text = et[cut_pos:]
+            self.cmp_pos=cut_pos
 
             if m.groups()[1] != None:
                 # Skip partial command search
