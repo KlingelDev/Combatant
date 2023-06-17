@@ -78,6 +78,9 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         self._cmd_mode = False
         self._cmds = []
 
+        self.cmp_length = 20
+        """Autocomplete popup width"""
+
         self._edit = u.Edit()
         self._w = u.AttrWrap(self._edit, 'cl')
 
@@ -100,7 +103,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         TODO: ctrl-c ctrl-v, select text
         """
         logging.debug(f"CLEdit catch_keypress '{key}'")
-        self.update_autocmp()
+
         if not self.cmp_is_open():
             self.open_pop_up()
 
@@ -108,6 +111,9 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         if self._edit.valid_char(key):
             """Pass non-command chars to Edit, update autocompletion"""
             self._edit.insert_text(key)
+
+            # Update autocompletion
+            self.update_autocmp()
 
         elif cmd == u.CURSOR_LEFT:
             p = self._w.edit_pos
@@ -149,7 +155,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
                 p = u.move_next_char(et, p, len(et))
 
-                self._w.set_edit_text(et[:ep] +  et[p:])
+                self._w.set_edit_text(et[:ep] + et[p:])
 
         elif key == "home":
             self._w.set_edit_pos(0)
@@ -169,6 +175,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             self.send_cmd()
             return
 
+        self.update_autocmp()
         return key
 
     def send_cmd(self):
@@ -192,45 +199,87 @@ class WidgetCLEdit(CombatantPopUpLauncher):
     def get_pop_up_parameters(self):
         #height = len(TimeWCommand.supported_commands)
         #width = max(len(x) for x in CLCommands.supported)
+        l = len(self._pop_up_widget._body)
+        l = len(self._pop_up_widget._body)
+        l = 1 if l == 0 else l
+
+        logging.debug(f"height '{l!r}'")
         return {'left': 0,
-                'top': -(len(TimeWCommand.supported_commands)),
-                'overlay_width': 30,
-                'overlay_height': len(TimeWCommand.supported_commands)
+                'top': -(l),
+                'overlay_width': self.cmp_length,
+                'overlay_height': l
                }
 
     def update_autocmp(self):
+        """
+        get CL input, update autocomplete widget
+        """
+        # Get strlength for window size
+        cmpl = 0
+
         ep = self._w.edit_pos
         et = self._w.edit_text
 
+        logging.debug(f"search_text 1: '{et!r}'")
+        # Remove completed commands/show args
+        r = map(lambda x: x+'|', TimeWCommand.alias)
+        a = ''.join(list(r))[:-1]
+        r = map(lambda x: x+'|', list(TimeWCommand.supported_commands.keys()))
+        c = ''.join(list(r))[:-1]
+
+        s = "^("+a+"){0,1}\s{0,1}("+c+"){0,1}\s{0,1}"
+        m = regex.search(s, et) if et != '' else None
+
+        cmds = []
+        arg_help = False
+        if m != None and (m.groups()[0] != None or m.groups()[1] != None):
+            # Cut from search_text commands we already have
+            cut_pos=m.spans()[-1][-1]
+            search_text = et[cut_pos:]
+
+            if m.groups()[1] != None:
+                # Skip partial command search
+                arg_help = True
+
+            else:
+                # Build cmdlist
+                cmds.extend(TimeWCommand.supported_commands)
+        else:
+            search_text = et
+            cmds.extend(TimeWCommand.alias)
+            cmds.extend(TimeWCommand.supported_commands)
+
+        # Partial command completion
         b = []
-        text = []
-        p = r"("+et+r")+"
-        for a in TimeWCommand.alias:
+        for c in cmds:
             txt_out = []
-            cm = regex.search(p, a)
+            cm = regex.search("("+search_text+")+", c)
             if cm != None:
                 cm_ch = []
                 for s in cm.spans():
                     cm_ch.extend(list(range(*s)))
 
+                # Mark command parts that are matching, highlight them
                 pos = 0
                 hl = False
-                for ch in a:
+                for ch in c:
                     if pos in cm_ch:
                         if not hl or pos == 0:
                             txt_out.append(['selected', ''])
                             hl = True
+
                         txt_out[-1][1] += ch
 
                     else:
                         if hl or pos == 0:
                             txt_out.append('')
                             hl = False
+
                         txt_out[-1] += ch
 
                     pos += 1
 
-                logging.debug(f"txtout1 '{txt_out!r}'")
+                # Make tulples out of list, urwid does not like list
                 r = []
                 for t in txt_out:
                     if type(t) == list:
@@ -238,13 +287,25 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                     else:
                         r.append(t)
 
-                logging.debug(f"txtout '{r!r}'")
+                cmpl = len(c) if len(c) > cmpl else cmpl
                 b.append(CMPListItem(r))
 
-        #self.close_pop_up()
+        # No match show all commands
+        if len(b) == 0:
+            for c in cmds:
+                cmpl = len(c) if len(c) > cmpl else cmpl
+                b.append(CMPListItem(c))
+
+        # Help with tags and command arguments
+        if arg_help:
+            ah = TimeWCommand.supported_commands[m.groups()[1]]
+            cmpl = len(ah) if len(ah) > cmpl else cmpl
+            b = [CMPListItem(ah)]
+
         logging.debug(f"box '{b!r}'")
+
+        self.cmp_length = cmpl if cmpl > 0 else 1
         self._pop_up_widget.update_cmp(commands=b)
-        #self.open_pop_up()
 
     def get_edit_text(self):
         return self._edit.get_edit_text()

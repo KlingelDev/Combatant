@@ -17,14 +17,40 @@ class TimeWCommand:
     """
     Available/implemented timew commands. Information for command completion.
     """
-    alias = ['timew', 'timewarrior']
-    alias_search = ''
-    for a in alias:
-        alias_search += f'{a}|'
-    alias_search = '^({0})\s*'.format(alias_search[:-1])
-
-    supported_commands = \
-     ['start', 'stop', 'version', 'help']
+    alias = ('timew', 'timewarrior')
+    supported_commands = {
+     'annotate': ('@<id> [@<id> ...] <annotation>'),
+     'cancel': (),
+     'config': ("[<name> [<value> | '']]"),
+     'continue': ('[@<id>] [<date>|<interval>]'),
+     'day': ('[<interval>] [<tag> ...]'),
+     'delete': ('@<id> [@<id> ...]'),
+     'diagnostics': (''),
+     'export': ('[<interval>] [<tag> ...]'),
+     'extensions': (''),
+     'gaps': ('[<interval>] [<tag> ...]'),
+     'get': ('<DOM> [<DOM> ...]'),
+     'help': ('[<command> | dates | dom | durations | hints | ranges]'),
+     'join': ('@<id> @<id>'),
+     'lengthen': ('@<id> [@<id> ...] <duration>'),
+     'modify': ('(start|end) @<id> <date>'),
+     'month': ('[<interval>] [<tag> ...]'),
+     'move': ('@<id> <date>'),
+     #TODO make this work
+     #'':('[report] <report> [<interval>] [<tag> ...]'),
+     'shorten': ('@<id> [@<id> ...] <duration>'),
+     'show': (''),
+     'split': ('@<id> [@<id> ...]'),
+     'start': ('[<date>] [<tag> ...]'),
+     'stop': ('[<tag> ...]'),
+     'summary': ('[<interval>] [<tag> ...]'),
+     'tag': ('@<id> [@<id> ...] <tag> [<tag> ...]'),
+     'tags': ('[<interval>] [<tag> ...]'),
+     'track': ('<interval> [<tag> ...]'),
+     'undo': (''),
+     'untag': ('@<id> [@<id> ...] <tag> [<tag> ...]'),
+     'week': ('[<interval>] [<tag> ...]')
+    }
 
 class TimeW:
     """
