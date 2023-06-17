@@ -1,0 +1,6 @@
+- [ ] Configuration file
+- [ ] Get tags
+- [ ] Empty command ([report] <interval>) See twcommand.py:39
+- [ ] Cmd complete
+- [ ] Debugging / logging cleanup
+- [ ] Tabswitch commands
