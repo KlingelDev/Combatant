@@ -1,5 +1,5 @@
 import urwid as u
-import math, logging
+import math, logging, regex
 
 from .widgetcombatant import *
 
@@ -97,13 +97,16 @@ class WidgetCLEdit(CombatantPopUpLauncher):
     def catch_keypress(self, key):
         """
         Catches keypresses of autocompletion popup.
+        TODO: ctrl-c ctrl-v, select text
         """
         logging.debug(f"CLEdit catch_keypress '{key}'")
+        self.update_autocmp()
         if not self.cmp_is_open():
             self.open_pop_up()
 
         cmd = self._command_map[key]
         if self._edit.valid_char(key):
+            """Pass non-command chars to Edit, update autocompletion"""
             self._edit.insert_text(key)
 
         elif cmd == u.CURSOR_LEFT:
@@ -195,6 +198,54 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                 'overlay_height': len(TimeWCommand.supported_commands)
                }
 
+    def update_autocmp(self):
+        ep = self._w.edit_pos
+        et = self._w.edit_text
+
+        b = []
+        text = []
+        p = r"("+et+r")+"
+        for a in TimeWCommand.alias:
+            txt_out = []
+            cm = regex.search(p, a)
+            if cm != None:
+                cm_ch = []
+                for s in cm.spans():
+                    cm_ch.extend(list(range(*s)))
+
+                pos = 0
+                hl = False
+                for ch in a:
+                    if pos in cm_ch:
+                        if not hl or pos == 0:
+                            txt_out.append(['selected', ''])
+                            hl = True
+                        txt_out[-1][1] += ch
+
+                    else:
+                        if hl or pos == 0:
+                            txt_out.append('')
+                            hl = False
+                        txt_out[-1] += ch
+
+                    pos += 1
+
+                logging.debug(f"txtout1 '{txt_out!r}'")
+                r = []
+                for t in txt_out:
+                    if type(t) == list:
+                        r.append(tuple(t))
+                    else:
+                        r.append(t)
+
+                logging.debug(f"txtout '{r!r}'")
+                b.append(CMPListItem(r))
+
+        #self.close_pop_up()
+        logging.debug(f"box '{b!r}'")
+        self._pop_up_widget.update_cmp(commands=b)
+        #self.open_pop_up()
+
     def get_edit_text(self):
         return self._edit.get_edit_text()
 
@@ -210,16 +261,23 @@ class CMPPopUp(u.PopUpTarget):
     """ Command completion PopUp """
     def __init__(self, keypress_handle):
         b = []
-        for c in TimeWCommand.supported_commands:
+        for c in TimeWCommand.alias:
             b.append(CMPListItem(c))
 
-        logging.debug(f"CMPPopUp b '{b!r}'")
-        self._body = u.SimpleListWalker(b)
-        self._w = u.ListBox(self._body)
-        self._w = u.AttrMap(self._w, 'cmp_list')
+        self.assemble(commands=b)
 
         self._keypress_handle = keypress_handle
         super(CMPPopUp, self).__init__(self._w)
+
+    def assemble(self, commands=[]):
+        self._body = u.SimpleListWalker(commands)
+        self._w = u.ListBox(self._body)
+        self._w = u.AttrMap(self._w, 'cmp_list')
+
+    def update_cmp(self, commands=[]):
+        self._body.clear()
+        for c in commands:
+            self._body.append(c)
 
     def keypress(self, size, key):
         logging.debug(f"CMPPopUp keypress '{key}'")

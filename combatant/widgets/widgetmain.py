@@ -43,7 +43,6 @@ class WidgetMain(CombatantWidgetWrap):
         self._frame = u.Frame(header = self._m_tabs,
                               body = self._m_body,
                               footer = self._m_cl)
-
         self._w = self._frame
 
     def app_start(self):

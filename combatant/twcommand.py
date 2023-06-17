@@ -1,4 +1,4 @@
-import subprocess, re
+import subprocess, re, regex
 import logging
 import asyncio
 
@@ -18,6 +18,11 @@ class TimeWCommand:
     Available/implemented timew commands. Information for command completion.
     """
     alias = ['timew', 'timewarrior']
+    alias_search = ''
+    for a in alias:
+        alias_search += f'{a}|'
+    alias_search = '^({0})\s*'.format(alias_search[:-1])
+
     supported_commands = \
      ['start', 'stop', 'version', 'help']
 
