@@ -2,6 +2,7 @@ import urwid as u
 import logging
 
 from .widgetcombatant import *
+from activity import Activity
 
 class CargoError(Exception):
     def __init__(self, cargo=''):
@@ -57,6 +58,14 @@ class TimeWidgetCargo(WidgetCargo):
 
     def start_activity(self, a):
         logging.debug('start activity {0!r}'.format(a))
+        self.status = u.Filler(u.Text(a.status))
+        self.started = u.Filler(u.Text(a.started))
+
+        self._w = u.Pile([self.status, self.started])
 
     def stop_activity(self, a):
         logging.debug('stopped activity {0!r}'.format(a))
+        self.status = u.Filler(u.Text(a.status))
+        self.started = u.Filler(u.Text(a.started))
+
+        self._w = u.Pile([self.status, self.started])
