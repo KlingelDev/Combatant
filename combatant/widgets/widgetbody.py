@@ -38,23 +38,6 @@ class WidgetBody(CombatantWidgetWrap):
     def focus(self):
         self._w.focus()
 
-    # def cargo_handle(self, cargo, userdata, sig=None):
-    #     if cargo in self.cargo:
-    #         try:
-    #             h = getattr(self.cargo[cargo], userdata['cargohandle'])
-    #             if h:
-    #                 h(sig, userdata)
-    #             else:
-    #                 raise CargoHandleError(cargo, userdata['cargohandle'])
-    #
-    #         except BaseException as exc:
-    #             logging.debug(f"Problem with cargo '{cargo}'")
-    #             exc = traceback.format_exception(exc, limit=4, chain=True)
-    #             for l in exc:
-    #                 if len(l): logging.debug('{0}'.format(l[:-1]))
-    #     else:
-    #         raise CargoError(cargo)
-
 class WidgetCargo(CombatantWidgetWrap):
     def __init__(self, tablabel='', sm=None):
         self.tl = u.Filler(u.Text(tablabel))
