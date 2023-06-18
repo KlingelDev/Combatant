@@ -34,12 +34,13 @@ setup(
     author='Karl-Heinz Ruskowski',
     author_email='khruskowski@gmail.com',
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: MIT License',
         'Environment :: Console',
         'Programming Language :: Python',
         'Natural Language :: English',
-        'Topic :: Text Processing :: General',
+        'Topic :: Office/Business',
+        'Topic :: Utilities'
     ],
     keywords=[
         'timewarrior',

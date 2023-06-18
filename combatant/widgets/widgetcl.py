@@ -1,6 +1,8 @@
 import urwid as u
 import math, logging, regex
 
+from typing import Literal
+
 from .widgetcombatant import *
 
 from twcommand import TimeWCommand
@@ -77,8 +79,10 @@ class WidgetCLEdit(CombatantPopUpLauncher):
     def __init__(self, caption='', wrap='clip', sm=None):
         self._cmd_mode = False
         self._cmds = []
+        """Command history"""
 
         self.cmp_pos = 0
+        """Position in CLEdit"""
         self.cmp_length = 20
         """Autocomplete popup width"""
 
@@ -131,11 +135,25 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                                  len(self._w.edit_text))
             self._w.set_edit_pos(p)
 
+        elif cmd == u.CURSOR_UP:
+            self._pop_up_widget.select(-1)
+
+        elif cmd == u.CURSOR_DOWN:
+            self._pop_up_widget.select(1)
+
+        elif key == "tab":
+            self._pop_up_widget.select(1)
+            self.emit('Dirty')
+
+        elif key == "shift tab":
+            self._pop_up_widget.select(-1)
+
         elif key == "backspace":
             if not self._w._delete_highlighted():
                 p = self._w.edit_pos
                 if p == 0:
                     return key
+
                 p = u.move_prev_char(self._w.edit_text,0,p)
 
                 et = self._w.edit_text
@@ -143,6 +161,8 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
                 self._w.set_edit_text(et[:p] + et[ep:])
                 self._w.set_edit_pos(p)
+
+            self.update_autocmp()
 
         elif key == "delete":
             self._w.pref_col_maxcol = None, None
@@ -158,6 +178,8 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
                 self._w.set_edit_text(et[:ep] + et[p:])
 
+            self.update_autocmp()
+
         elif key == "home":
             self._w.set_edit_pos(0)
 
@@ -168,6 +190,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             logging.debug('Send ExitCMDMode 0')
             if self.cmp_is_open():
                 self.close_pop_up()
+
             self.emit('CMDMode', 0)
 
         elif key == 'enter':
@@ -176,7 +199,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             self.send_cmd()
             return
 
-        self.update_autocmp()
+        #self.update_autocmp()
         return key
 
     def send_cmd(self):
@@ -204,7 +227,6 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         l = len(self._pop_up_widget._body)
         l = 1 if l == 0 else l
 
-        logging.debug(f"height '{l!r}'")
         return {'left': self.cmp_pos,
                 'top': -(l),
                 'overlay_width': self.cmp_length,
@@ -213,7 +235,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
     def update_autocmp(self):
         """
-        get CL input, update autocomplete widget
+        get CL input, update autocomplete popup
         """
         # Get strlength for window size
         cmpl = 0
@@ -222,10 +244,10 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         ep = self._w.edit_pos
         et = self._w.edit_text
 
-        logging.debug(f"search_text 1: '{et!r}'")
         # Remove completed commands/show args
         r = map(lambda x: x+'|', TimeWCommand.alias)
         a = ''.join(list(r))[:-1]
+
         r = map(lambda x: x+'|', list(TimeWCommand.supported_commands.keys()))
         c = ''.join(list(r))[:-1]
 
@@ -268,17 +290,17 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                 for ch in c:
                     if pos in cm_ch:
                         if not hl or pos == 0:
-                            txt_out.append(['selected', ''])
+                            txt_out.append(['cmp_list_hl', ''])
                             hl = True
 
                         txt_out[-1][1] += ch
 
                     else:
                         if hl or pos == 0:
-                            txt_out.append('')
+                            txt_out.append(['cmp_list', ''])
                             hl = False
 
-                        txt_out[-1] += ch
+                        txt_out[-1][1] += ch
 
                     pos += 1
 
@@ -305,10 +327,11 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             cmpl = len(ah) if len(ah) > cmpl else cmpl
             b = [CMPListItem(ah)]
 
-        logging.debug(f"box '{b!r}'")
+        #logging.debug(f"CMP Popup '{b!r}'")
 
         self.cmp_length = cmpl if cmpl > 0 else 1
-        self._pop_up_widget.update_cmp(commands=b)
+        if self._pop_up_widget != None:
+            self._pop_up_widget.update_cmp(commands=b)
 
     def get_edit_text(self):
         return self._edit.get_edit_text()
@@ -324,36 +347,160 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 class CMPPopUp(u.PopUpTarget):
     """ Command completion PopUp """
     def __init__(self, keypress_handle):
+        self._cmds = []
+        self._size = 0
+        """Number of items in popup"""
+
+        self._sel_index = 0
+        """Show listitem that has been selected (index)"""
+
+        self._selected = False
+        """An item has been selected"""
+
         b = []
         for c in TimeWCommand.alias:
             b.append(CMPListItem(c))
-
         self.assemble(commands=b)
 
         self._keypress_handle = keypress_handle
+        """Catch keypress and give it to keypress_handle"""
+
         super(CMPPopUp, self).__init__(self._w)
 
     def assemble(self, commands=[]):
-        self._body = u.SimpleListWalker(commands)
-        self._w = u.ListBox(self._body)
-        self._w = u.AttrMap(self._w, 'cmp_list')
-
-    def update_cmp(self, commands=[]):
-        self._body.clear()
+        self._cmds = commands
+        self._body = u.SimpleListWalker([])
         for c in commands:
+            c.select()
             self._body.append(c)
 
+        self._size = self.size
+        self._w = u.AttrMap(u.ListBox(self._body), 'cmp_list')
+
+    def update_cmp(self, commands=[], sel=None):
+        """Update autocomplete list"""
+        self._cmds = commands
+        self._body.clear()
+
+        for i in range(0, len(commands)):
+            if sel != None and i == sel:
+                logging.debug("select index {0} {1}".format(sel, i))
+                commands[i].select()
+                self._body.append(commands[i])
+
+            else:
+                commands[i].unselect()
+                self._body.append(commands[i])
+
+            #logging.debug("com {0!r}".format(commands[i]._attrib))
+
+
+    def select(self, pos_change):
+        """Select autocomplete list item"""
+
+        # Do menu looping
+        if not self._selected:
+            self.index = 0
+
+        elif self.index + pos_change >= self.size:
+            self.index = 0
+
+        elif self.index + pos_change < 0:
+            self.index = self.size-1
+
+        else:
+            self.index += pos_change
+
+        self._selected = True
+        self.update_cmp(self._cmds, sel=self.index)
+
+    def unselect(self, pos_change):
+        """Remove selection"""
+        self.update_cmp(self.cmds, sel=None)
+
     def keypress(self, size, key):
+        """Catch keypress give it to keypress handle"""
         logging.debug(f"CMPPopUp keypress '{key}'")
         key = self._keypress_handle(key)
 
         if key:
             return super(CMPPopUp, self).keypress(size, key)
 
+    @property
+    def size(self):
+        """Return number of items in popup"""
+        return len(self._body)
+
+    @property
+    def index(self):
+        """Return index of selected item in popup"""
+        return self._sel_index
+
+    @index.setter
+    def index(self, i):
+        """Select item via index"""
+        self._sel_index = i
+        self._selected = True
+
+    @property
+    def selected(self):
+        """Return if an item has been selected"""
+        self._selected = True
+
 class CMPListItem(u.Text):
-    """ Command completion PopUp List Item """
+    """Command completion PopUp List Item"""
     _selectable = True
     signals = ['click']
+
+    def __init__(self, markup,
+        align: Literal['left', 'center', 'right'] = u.LEFT,
+        wrap: Literal['space', 'any', 'clip', 'ellipsis'] = u.SPACE,
+        layout=None):
+
+        #u.Widget.__init__(self)
+
+        self._cache_maxcol = None
+        self.set_text(markup)
+        self.set_layout(align, wrap, layout)
+
+        self._mrkup = markup
+
+    def select(self):
+        markup = []
+
+        if type(self._mrkup) != str:
+            for m in self._mrkup:
+                if type(m) == tuple:
+                    if m[0] == 'cmp_list' or m[0] == 'cmp_list_unsel':
+                        markup.append(('cmp_list_sel', m[1]))
+
+                    else:
+                        markup.append(m)
+                else:
+                    markup.append(('cmp_list_sel', m))
+        else:
+            markup.append(('cmp_list_sel', self._mrkup))
+
+        #logging.debug("sel markup '{0!r}'".format(markup))
+        self.set_text(markup)
+
+    def unselect(self):
+        markup = []
+
+        if type(self._mrkup) != str:
+            for m in self._mrkup:
+                if type(m) == tuple:
+                    if m[0] == 'cmp_list' or m[0] == 'cmp_list_sel':
+                        markup.append(('cmp_list_unsel', m[1]))
+
+                    else:
+                        markup.append(m)
+                else:
+                    markup.append(('cmp_list_unsel', m))
+        else:
+            markup.append(('cmp_list_unsel', self._mrkup))
+
+        self.set_text(markup)
 
     def keypress(self, size, key):
         logging.debug(f"CMPListItem keypress '{key}'")

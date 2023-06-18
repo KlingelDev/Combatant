@@ -1,3 +1,5 @@
+#from pudb.remote import set_trace
+
 import os, sys
 import time, re, traceback, signal
 
@@ -28,8 +30,12 @@ class CombatantPalette:
         return [("normal", "black", "dark gray"),
                 ("selected", "black", "light gray"),
                 ("tabnormal", "black", "dark gray"),
+
                 ('cmp_list', 'white', 'dark blue'),
-                ('cmp_list_hightlight', 'white,standout', 'dark blue'),
+                ('cmp_list_hl', 'white,standout', 'dark blue'),
+                ('cmp_list_sel', 'black', 'dark gray'),
+                ('cmp_list_unsel', 'white', 'dark blue'),
+
                 ("tabselected", "black", "light gray"),
                 ("bg", "white", "black"),
                 ("tabborder", "light gray", "black")
@@ -55,6 +61,7 @@ class Combatant:
     def __init__(self, setup=False):
         logging.debug('=====================================================')
         logging.debug('...starting.')
+        #set_trace(term_size=(120, 50))
 
         self._tick = .1 #sec
         self._last_tick = time.time_ns()
@@ -89,8 +96,9 @@ class Combatant:
         self.asyncio_loop.add_signal_handler(signal.SIGQUIT, self.signal_quit)
 
         # Register and plug signals
-        self.signal_manager.connect(self.frame.body, 'Dirty', self.draw_screen)
-        self.signal_manager.connect(self.frame.cl, 'Dirty', self.draw_screen)
+        # self.signal_manager.connect(self.frame.body, 'Dirty', self.draw_screen)
+        # self.signal_manager.connect(self.frame.cl, 'Dirty', self.draw_screen)
+        self.signal_manager.connect(self.frame.cl.edit_line, 'Dirty', self.draw_screen)
         self.signal_manager.connect(self.frame.cl, 'CMD', self.signal_cmd)
         self.signal_manager.connect(self.frame, 'Quit', self.signal_quit)
 
