@@ -5,7 +5,7 @@ from .widgetcombatant import *
 
 from .widgetbody import WidgetBody
 from .widgetcl import WidgetCL, WidgetCLEdit
-from .widgetbody import WidgetBody
+from .widgetbody import WidgetBody, WidgetCargo, TimeWidgetCargo
 from .widgettabs import WidgetTabs, WidgetTabButton
 
 class WidgetMain(CombatantWidgetWrap):
@@ -16,7 +16,7 @@ class WidgetMain(CombatantWidgetWrap):
         self._cmd_key = ':'
         """Set command key"""
 
-        self._tabs = [('time', 'Time', 'T', WidgetTabButton),
+        self._tabs = [('time', 'Time', 'T', WidgetTabButton, TimeWidgetCargo),
                       ('labels', 'Labels', 'L'),
                       ('modify', 'Modify', 'M'),
                       ('summary', 'Summary', 'S'),

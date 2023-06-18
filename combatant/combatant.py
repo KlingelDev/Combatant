@@ -1,10 +1,12 @@
 #from pudb.remote import set_trace
 
 import os, sys
-import time, re, traceback, signal
+import time, traceback, signal
 
 import asyncio
 import logging
+import regex
+import datetime
 
 import urwid as u
 
@@ -18,6 +20,9 @@ from signalmanager import SignalManager
 from signals import CombatantSignals
 
 from twcommand import TimeW, CommandSterilizationError, CommandError
+from twcommand import TimeWCommand as twc
+
+from activity import Activity
 
 class TaskCreationError(Exception):
     def __init__(self, cmd=''):
@@ -63,7 +68,7 @@ class Combatant:
         logging.debug('...starting.')
         #set_trace(term_size=(120, 50))
 
-        self._tick = .1 #sec
+        self._tick = .1666 #sec
         self._last_tick = time.time_ns()
 
         self._tasks = set()
@@ -142,7 +147,7 @@ class Combatant:
         # TODO add commands to switch tabs
         logging.debug(f'CMD {cmd!r}')
         task = None
-        cquit_match = re.search('^[qQ]uit', cmd)
+        cquit_match = regex.search('^[qQ]uit', cmd)
         if cquit_match:
             self.signal_quit()
             return 0
@@ -183,8 +188,28 @@ class Combatant:
             for l in exc:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
-        self._tasks.discard(task)
-        # TODO self._frame.cmd_complete
+        finally:
+            # Create Activity objects for display
+            self._tasks.discard(task)
+            if r[0] == 0:
+                logging.debug('result: {0!r}'.format(r[1]))
+                resstr = r[1].decode('utf-8')
+
+                m = regex.match(twc.start_pattern, resstr)
+
+                if m:
+                    logging.debug('start match: {0!r}'.format(m.groups()))
+                    a = Activity(status='tracking',
+                                 started=m.groups()[1])
+                    self.signal_manager.put('StartActivity', a)
+
+                m = regex.match(twc.stop_pattern, resstr)
+
+                if m:
+                    logging.debug('stop match: {0!r}'.format(m.groups()))
+                    a = Activity(status='recorded',
+                                 started=m.groups()[1])
+                    self.signal_manager.put('StopActivity', a)
 
     def draw_screen(self):
         logging.debug('draw screen')
@@ -196,6 +221,6 @@ class Combatant:
 
     def signal_winch(self):
         cols, rows = self.ui.get_cols_rows()
-        logging.debug('winch: %d x %d' % (cols, rows))
+        logging.debug('winch: {0} x {1}'.format(cols, rows))
         self.signal_manager.put('WinChange', (cols, rows))
 

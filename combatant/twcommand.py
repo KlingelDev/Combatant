@@ -52,6 +52,13 @@ class TimeWCommand:
      'week': ('[<interval>] [<tag> ...]')
     }
 
+    date_pattern = '((?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T' + \
+                   '(?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2}))'
+
+    # TODO catch tags
+    start_pattern = 'Tracking\s*(\w*)[\n\s]+Started\s' + date_pattern
+    stop_pattern = 'Recorded\s*(\w*)[\n\s]+Started\s' + date_pattern
+
 class TimeW:
     """
     Static Class with methods that control timewarrior.

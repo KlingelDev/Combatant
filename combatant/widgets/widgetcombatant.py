@@ -20,8 +20,8 @@ class CombatantWidget:
     def emit(self, signal, *args, **kwargs):
         self._sm.put(signal, *args, **kwargs)
 
-    def connect_signal(self, caller, name, handler):
-        self._sm.connect(caller, name, handler)
+    def connect_signal(self, caller, name, handler, **kwargs):
+        self._sm.connect(caller, name, handler, **kwargs)
 
     def focus(self):
         """Sets focus on main widget _w, override will be needed"""

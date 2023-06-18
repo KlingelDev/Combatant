@@ -8,5 +8,6 @@ class CombatantSignals:
         sm.register('WinChange', 'Windows size change')
         sm.register('Dirty', 'Forces draw_screen()')
         sm.register('Quit', 'Exit the application')
-        sm.register('Test', 'test')
+        sm.register('StartActivity', 'Timew started timer')
+        sm.register('StopActivity', 'Timew started timer')
 

@@ -18,9 +18,12 @@ class SignalManager:
     def register(self, name, desc):
         self._registry[name] = SMSignal(name, desc)
 
-    def connect(self, caller, name, handler):
+    def connect(self, caller, name, handler, **kwargs):
         if name in self._registry:
-            self._registry[name].add_handler(caller, handler)
+            if len(kwargs):
+                self._registry[name].add_handler(caller, handler, kwargs)
+            else:
+                self._registry[name].add_handler(caller, handler, {})
 
         else:
             raise SignalConnectError(name)
@@ -53,7 +56,10 @@ class SignalManager:
         for s in signals:
             if s[0] in self._registry:
                 for h in self._registry[s[0]].handlers:
-                    h[1](*s[1:])
+                    if len(h[2]):
+                        h[1](*s[1:], userdata=h[2])
+                    else:
+                        h[1](*s[1:])
 
             else:
                 raise SignalConnectError(s[0])
@@ -74,8 +80,8 @@ class SMSignal:
         self._desc = desc
         self._handlers = []
 
-    def add_handler(self, caller, handler):
-        self._handlers.append((caller, handler))
+    def add_handler(self, caller, handler, kwargs):
+        self._handlers.append((caller, handler, kwargs))
 
     def remove_handler(self, handler, caller=None):
         for h in self._handlers:
@@ -97,7 +103,6 @@ class SMSignal:
         return self._desc
 
     @property
-    def handlers(self) -> str:
+    def handlers(self) -> list:
         """Return signal name"""
         return self._handlers
-
