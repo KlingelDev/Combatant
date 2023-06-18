@@ -83,6 +83,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
         self.cmp_pos = 0
         """Position in CLEdit"""
+
         self.cmp_length = 20
         """Autocomplete popup width"""
 
@@ -384,7 +385,6 @@ class CMPPopUp(u.PopUpTarget):
 
         for i in range(0, len(commands)):
             if sel != None and i == sel:
-                logging.debug("select index {0} {1}".format(sel, i))
                 commands[i].select()
                 self._body.append(commands[i])
 
@@ -420,7 +420,6 @@ class CMPPopUp(u.PopUpTarget):
 
     def keypress(self, size, key):
         """Catch keypress give it to keypress handle"""
-        logging.debug(f"CMPPopUp keypress '{key}'")
         key = self._keypress_handle(key)
 
         if key:
@@ -456,8 +455,6 @@ class CMPListItem(u.Text):
         align: Literal['left', 'center', 'right'] = u.LEFT,
         wrap: Literal['space', 'any', 'clip', 'ellipsis'] = u.SPACE,
         layout=None):
-
-        #u.Widget.__init__(self)
 
         self._cache_maxcol = None
         self.set_text(markup)
@@ -503,7 +500,6 @@ class CMPListItem(u.Text):
         self.set_text(markup)
 
     def keypress(self, size, key):
-        logging.debug(f"CMPListItem keypress '{key}'")
         if self._command_map[key] != u.ACTIVATE:
             return key
 
