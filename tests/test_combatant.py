@@ -9,3 +9,10 @@ class CombatantTestCase(unittest.TestCase):
 
     def test_app_start(self):
         self.c.app_start()
+
+    def test_cmd_twhelp(self):
+        self.c.signal_cmd('timew help')
+
+    def test_run_stop(self):
+        self.c.uloop.set_alarm_in(0.001, self.c.signal_quit)
+        self.c.run()

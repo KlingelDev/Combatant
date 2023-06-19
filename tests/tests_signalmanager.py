@@ -89,6 +89,7 @@ class SignalManagerTestCase(unittest.TestCase):
         self.assertEqual(a.x, 6)
 
     def test_process2(self):
+        """Two callbacks"""
         self.sm.register('SigTest', 'Test desc')
 
         def test1(a):
