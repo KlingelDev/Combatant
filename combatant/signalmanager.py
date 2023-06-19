@@ -37,6 +37,8 @@ class SignalManager:
 
     def process(self):
         """Process signals in the queue"""
+        ret = []
+
        #remove duplicates
         signals = []
         m = self.get()
@@ -56,10 +58,21 @@ class SignalManager:
         for s in signals:
             if s[0] in self._registry:
                 for h in self._registry[s[0]].handlers:
+                    if s[0] == 'CMDMode':
+                        logging.debug('h {0!r}'.format(h))
+
                     if len(h[2]):
-                        h[1](*s[1:], userdata=h[2])
+                       r = h[1](*s[1:], userdata=h[2])
                     else:
-                        h[1](*s[1:])
+                       r = h[1](*s[1:])
+
+                    try:
+                        # Calls done. Let caller know
+                        c = getattr(h[0], 'callback')
+                        if c: c(r)
+
+                    except AttributeError:
+                        pass
 
             else:
                 raise SignalConnectError(s[0])
