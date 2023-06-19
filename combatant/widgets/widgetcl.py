@@ -8,6 +8,7 @@ from .widgetcombatant import *
 from twcommand import TimeWCommand
 
 class WidgetCL(CombatantWidgetWrap):
+    _selectable = True
     """
     Command line widget containing commandline button and text edit
     """
@@ -62,7 +63,7 @@ class WidgetCL(CombatantWidgetWrap):
         self.edit_line.clear()
 
     def focus_cl(self, d):
-        self.emit('CMDMode', 1)
+        self.emit('CMDMode', True)
 
     def win_change(self, colrows):
         cols, rows = colrows
@@ -98,6 +99,13 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         `catch_keypress`.
         """
         logging.debug(f"CLEdit keypress '{key}'")
+        if key == 'esc':
+            if self.cmp_is_open():
+                self.close_pop_up()
+            else:
+                self.emit('CMDMode', False)
+            return
+
         if not self.cmp_is_open():
             self.open_pop_up()
 
@@ -108,7 +116,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         Catches keypresses of autocompletion popup.
         TODO: ctrl-c ctrl-v, select text
         """
-        logging.debug(f"CLEdit catch_keypress '{key}'")
+        #logging.debug(f"CLEdit catch_keypress '{key}'")
 
         if not self.cmp_is_open():
             self.open_pop_up()
@@ -144,7 +152,6 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
         elif key == "tab":
             self._pop_up_widget.select(1)
-            self.emit('Dirty')
 
         elif key == "shift tab":
             self._pop_up_widget.select(-1)
@@ -188,17 +195,20 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             self._w.set_edit_pos(len(self._w.edit_text))
 
         elif key == 'esc':
-            logging.debug('Send ExitCMDMode 0')
+            logging.debug('Send ExitCMDMode False')
+            logging.debug('is open {0}'.format(self.cmp_is_open()))
             if self.cmp_is_open():
                 self.close_pop_up()
-
-            self.emit('CMDMode', 0)
+            else:
+                self.emit('CMDMode', False)
+            return
 
         elif key == 'enter':
-            logging.debug('Send CMD')
-            self._cmd_mode = True
-            self.send_cmd()
-            return
+            if not self.cmp_is_open():
+                logging.debug('Send CMD')
+                self._cmd_mode = True
+                self.send_cmd()
+                return
 
         #self.update_autocmp()
         return key

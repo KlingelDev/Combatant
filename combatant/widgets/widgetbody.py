@@ -15,6 +15,7 @@ class CargoHandleError(Exception):
         super(Exception, self).__init__(self.message)
 
 class WidgetBody(CombatantWidgetWrap):
+    _selectable = True
     def __init__(self, tabs=[], sm=None):
         self._tabs = tabs
         self.assemble()
@@ -40,6 +41,7 @@ class WidgetBody(CombatantWidgetWrap):
         self._w.focus()
 
 class WidgetCargo(CombatantWidgetWrap):
+    _selectable = True
     def __init__(self, tablabel='', sm=None):
         self.tl = u.Filler(u.Text(tablabel))
         self._w = u.Pile([self.tl])
@@ -47,7 +49,8 @@ class WidgetCargo(CombatantWidgetWrap):
         super(WidgetCargo, self).__init__(self._w)
 
     def focus(self):
-        self._w.focus_position = 0
+        logging.debug('set focus {0!r}'.format(self))
+        self._w.focus_position = 1
 
 class TimeWidgetCargo(WidgetCargo):
     def __init__(self, tablabel='', sm=None):

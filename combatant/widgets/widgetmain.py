@@ -17,7 +17,7 @@ class WidgetMain(CombatantWidgetWrap):
         """Set command key"""
 
         self._tabs = [('time', 'Time', 'T', WidgetTabButton, TimeWidgetCargo),
-                      ('labels', 'Labels', 'L'),
+                      ('tags', 'Tags', 'L'),
                       ('modify', 'Modify', 'M'),
                       ('summary', 'Summary', 'S'),
                       ('config', 'Config', 'C')]
@@ -84,7 +84,7 @@ class WidgetMain(CombatantWidgetWrap):
             logging.debug('Main Exit CMDMode')
             self._cmd_mode = False
             self._w.focus_position = 'body'
-            self._m_body.focus = 0
+            self._m_body.focus = 1
 
     def cmd_complete(self):
         pass

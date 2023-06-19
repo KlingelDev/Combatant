@@ -115,6 +115,7 @@ class Combatant:
                                     self.frame.body.tab_switch)
 
         self.signal_manager.connect(self, 'AppStart', self.frame.app_start)
+        self.signal_manager.connect(self, 'AppStart', self.app_start)
 
     def run(self):
         try:
@@ -143,6 +144,11 @@ class Combatant:
 
         self.uloop.set_alarm_in(self._tick, self.tick)
 
+    def app_start(self):
+        """ Perform at AppStart """
+        self.signal_cmd('tags')
+        #status self.signal_cmd('')
+
     def signal_cmd(self, cmd):
         # TODO add commands to switch tabs
         logging.debug(f'CMD {cmd!r}')
@@ -170,6 +176,7 @@ class Combatant:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
     def cmd_result(self, task):
+        r = None
         try:
             r = task.result()
             logging.debug(
@@ -191,7 +198,7 @@ class Combatant:
         finally:
             # Create Activity objects for display
             self._tasks.discard(task)
-            if r[0] == 0:
+            if r and r[0] == 0:
                 logging.debug('result: {0!r}'.format(r[1]))
                 resstr = r[1].decode('utf-8')
 
@@ -215,8 +222,8 @@ class Combatant:
         logging.debug('draw screen')
         self.uloop.draw_screen()
 
-    def signal_quit(self):
-        logging.debug('sig quit')
+    def signal_quit(self, *arg):
+        logging.debug('sig quit. Bye!')
         raise u.ExitMainLoop()
 
     def signal_winch(self):

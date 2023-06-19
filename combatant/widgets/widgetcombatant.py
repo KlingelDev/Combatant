@@ -3,6 +3,7 @@ import urwid as u
 import logging
 
 class CombatantWidget:
+    _selectable = True
     """
     Superclass for Widgets used by Combatant
     """
