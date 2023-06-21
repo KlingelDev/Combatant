@@ -207,7 +207,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             return
 
         elif key == 'enter':
-            if self.cmp_is_open():
+            if self.cmp_is_open() and not self.arg_help:
                 # replace half command with one selected in cmp list
                 if self._pop_up_widget.select:
                     et = self._w.edit_text
@@ -240,9 +240,12 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         return key
 
     def send_cmd(self):
-        cmd = self.get_edit_text()
-        self._cmds.append(cmd)
-        self.emit('CMD', cmd)
+        et = self._w.edit_text
+
+        et = regex.sub('[\s]*$', '', et)
+        self._cmds.append(et)
+        self.emit('CMD', et)
+
         self.clear()
 
     def cmp_is_open(self):
@@ -293,7 +296,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         m = regex.search(s, et) if et != '' else None
 
         cmds = []
-        arg_help = False
+        self.arg_help = False
         if m != None and (m.groups()[0] != None or m.groups()[1] != None):
             # Cut from search_text commands we already have
             cut_pos=m.spans()[-1][-1]
@@ -302,7 +305,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
             if m.groups()[1] != None:
                 # Skip partial command search
-                arg_help = True
+                self.arg_help = True
 
             else:
                 # Build cmdlist
@@ -360,7 +363,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                 b.append(CMPListItem(c))
 
         # Help with tags and command arguments
-        if arg_help:
+        if self.arg_help:
             ah = TimeWCommand.supported_commands[m.groups()[1]]
             cmpl = len(ah) if len(ah) > cmpl else cmpl
             b = [CMPListItem(ah)]
