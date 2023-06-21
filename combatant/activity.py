@@ -21,6 +21,8 @@ class Activity:
     def stop(self):
         pass
 
+    def update(self, t):
+        pass
 
     @property
     def status(self) -> str:
@@ -38,7 +40,7 @@ class Activity:
         if self._started:
             return self._started.isoformat()
 
-        return None
+        return '-started-'
 
     @property
     def current(self) -> str:
@@ -46,7 +48,7 @@ class Activity:
         if self._current:
             return self._current.isoformat()
 
-        return None
+        return '-current-'
 
     @property
     def ended(self) -> str:
@@ -54,7 +56,7 @@ class Activity:
         if self._ended:
             return self._ended.isoformat()
 
-        return None
+        return '-ended-'
 
     @property
     def total(self) -> str:
@@ -62,4 +64,4 @@ class Activity:
         if self._total:
             return self._total.isoformat()
 
-        return None
+        return '-total-'

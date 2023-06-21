@@ -41,6 +41,9 @@ class CombatantPalette:
                 ('cmp_list_sel', 'black', 'dark gray'),
                 ('cmp_list_unsel', 'white', 'dark blue'),
 
+                ('activity_runnning', 'white', 'dark green'),
+                ('activity_stopped', 'black', 'dark red'),
+
                 ("tabselected", "black", "light gray"),
                 ("bg", "white", "black"),
                 ("tabborder", "light gray", "black")
@@ -86,6 +89,8 @@ class Combatant:
 
         self.asyncio_loop = asyncio.get_event_loop()
         self.aloop = u.AsyncioEventLoop(loop = self.asyncio_loop)
+
+        #loop.screen.set_terminal_properties(colors=256)
 
         logging.debug('Palette {0}'.format(repr(CombatantPalette.colors())))
         self.uloop = u.MainLoop(self.frame,

@@ -53,22 +53,46 @@ class WidgetCargo(CombatantWidgetWrap):
         self._w.focus_position = 1
 
 class TimeWidgetCargo(WidgetCargo):
+    """Cargo widget for the 'Time' tab"""
     def __init__(self, tablabel='', sm=None):
         super(TimeWidgetCargo, self).__init__(tablabel=tablabel, sm=sm)
+        self._w = u.Pile([])
 
         self.connect_signal(self, 'StartActivity', self.start_activity)
         self.connect_signal(self, 'StopActivity', self.stop_activity)
 
     def start_activity(self, a):
         logging.debug('start activity {0!r}'.format(a))
-        self.status = u.Filler(u.Text(a.status))
-        self.started = u.Filler(u.Text(a.started))
-
-        self._w = u.Pile([self.status, self.started])
+        wa = WidgetActivity(a)
+        self._w = u.Pile([wa])
+        self._w = u.AttrMap(self._w, 'activity_running')
 
     def stop_activity(self, a):
         logging.debug('stopped activity {0!r}'.format(a))
-        self.status = u.Filler(u.Text(a.status))
-        self.started = u.Filler(u.Text(a.started))
+        wa = WidgetActivity(a)
+        self._w = u.Pile([wa])
 
-        self._w = u.Pile([self.status, self.started])
+class WidgetActivity(CombatantWidgetWrap):
+    def __init__(self, a):
+        self._a = a
+        status = u.Pile([u.Text(a.status),
+                         u.Text(a.started),
+                         u.Text('[C-k]')])
+
+        tags = u.Text('tags')
+
+        buttons = u.Columns([u.Button('Pause'),
+                             u.Button('Stop'),
+                             u.Button('Del')])
+
+        total =  u.Pile([u.Text('total'), u.Text(a.total), buttons])
+
+        c = u.Padding(u.Columns([status, tags, total]))
+
+        self._w = u.Filler(c, valign='top')
+        self._w = u.AttrMap(self._w, 'activity_running')
+
+        super(WidgetActivity, self).__init__(self._w)
+
+    def tick(self, t):
+        pass

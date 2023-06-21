@@ -246,6 +246,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         self._cmds.append(et)
         self.emit('CMD', et)
 
+        self.close_pop_up()
         self.clear()
 
     def cmp_is_open(self):
