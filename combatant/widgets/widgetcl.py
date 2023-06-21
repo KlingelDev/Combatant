@@ -99,15 +99,22 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         `catch_keypress`.
         """
         logging.debug(f"CLEdit keypress '{key}'")
-        if key == 'esc':
-            if self.cmp_is_open():
-                self.close_pop_up()
-            else:
-                self.emit('CMDMode', False)
+        # if key == 'esc':
+        #     if self.cmp_is_open():
+        #         self.close_pop_up()
+        #     else:
+        #         self.emit('CMDMode', False)
+        #     return
+        if self._edit.valid_char(key):
+            if not self.cmp_is_open():
+                self.open_pop_up()
             return
 
-        if not self.cmp_is_open():
-            self.open_pop_up()
+        elif key == 'enter' and not self.cmp_is_open():
+            logging.debug('Send CMD')
+            self._cmd_mode = True
+            self.send_cmd()
+            return
 
         super(WidgetCLEdit, self).keypress(size, key)
 
@@ -116,20 +123,12 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         Catches keypresses of autocompletion popup.
         TODO: ctrl-c ctrl-v, select text
         """
-        #logging.debug(f"CLEdit catch_keypress '{key}'")
-
-        if not self.cmp_is_open():
-            self.open_pop_up()
+        logging.debug(f"CLEdit catch_keypress '{key}'")
 
         cmd = self._command_map[key]
-        if self._edit.valid_char(key):
-            """Pass non-command chars to Edit, update autocompletion"""
-            self._edit.insert_text(key)
+        #if self._edit.valid_char(key):
 
-            # Update autocompletion
-            self.update_autocmp()
-
-        elif cmd == u.CURSOR_LEFT:
+        if cmd == u.CURSOR_LEFT:
             p = self._w.edit_pos
             if p == 0:
                 return key
@@ -197,8 +196,10 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         elif key == 'esc':
             logging.debug('Send ExitCMDMode False')
             if self.cmp_is_open():
+                self._pop_up_widget.unselect()
                 self.close_pop_up()
             else:
+                self._pop_up_widget.unselect()
                 self.emit('CMDMode', False)
             return
 
@@ -209,12 +210,12 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                     et = self._w.edit_text
                     s = self._pop_up_widget.get_selected()
 
-                    logging.debug("et '{0}' s '{1}'".format(et, s))
                     et = regex.sub('(\w+)[\s]*$', s, et)
                     et += ' '
                     self._w.set_edit_text(et)
                     self._w.set_edit_pos(len(et))
 
+                    self._pop_up_widget.unselect()
                     self.close_pop_up()
                 return
 
@@ -223,6 +224,15 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                 self._cmd_mode = True
                 self.send_cmd()
                 return
+        else:
+            """Pass non-command chars to Edit, update autocompletion"""
+            self._edit.insert_text(key)
+
+            if not self.cmp_is_open():
+                self.open_pop_up()
+
+            # Update autocompletion
+            self.update_autocmp()
 
         return key
 
@@ -269,6 +279,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         et = self._w.edit_text
 
         # Remove completed commands/show args
+        #TODO Reset selected somewhere around here
         r = map(lambda x: x+'|', TimeWCommand.alias)
         a = ''.join(list(r))[:-1]
 
@@ -436,9 +447,11 @@ class CMPPopUp(u.PopUpTarget):
         self._selected = True
         self.update_cmp(self._cmds, sel=self.index)
 
-    def unselect(self, pos_change):
+    def unselect(self):
         """Remove selection"""
-        self.update_cmp(self.cmds, sel=None)
+        self._selected = False
+        self.index = 0
+        self.update_cmp(self._cmds, sel=None)
 
     def get_selected(self):
         """Return selected item"""
