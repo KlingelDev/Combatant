@@ -1,7 +1,7 @@
-#from pudb.remote import set_trace
-
 import os, sys
 import time, traceback, signal
+
+from io import StringIO
 
 import asyncio
 import logging
@@ -68,10 +68,11 @@ class Combatant:
     setup: bool
     """Perform setup"""
 
-    def __init__(self, setup=False):
+    def __init__(self, setup=False, unittest=False):
         logging.debug('=====================================================')
         logging.debug('...starting.')
-        #set_trace(term_size=(120, 50))
+
+        self.unittest = unittest
 
         self._tick = .1666 #sec
         self._last_tick = time.time_ns()
@@ -82,7 +83,13 @@ class Combatant:
             self.setup()
 
     def setup(self):
-        self.ui = u.raw_display.Screen()
+        if self.unittest:
+            # Redirect stdout into nothing for unittest
+            stdout_buff = StringIO()
+            self.ui = u.raw_display.Screen(output=stdout_buff)
+
+        else:
+            self.ui = u.raw_display.Screen()
 
         self.signal_manager = SignalManager()
         CombatantSignals.register_signals(sm=self.signal_manager)
@@ -97,6 +104,7 @@ class Combatant:
         logging.debug('Palette {0}'.format(repr(CombatantPalette.colors())))
         self.uloop = u.MainLoop(self.frame,
                                 CombatantPalette.colors(),
+                                screen = self.ui,
                                 handle_mouse = True,
                                 event_loop = self.aloop,
                                 pop_ups = True)
