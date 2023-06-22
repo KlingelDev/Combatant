@@ -10,4 +10,6 @@ class CombatantSignals:
         sm.register('Quit', 'Exit the application')
         sm.register('StartActivity', 'Timew started timer')
         sm.register('StopActivity', 'Timew started timer')
+        sm.register('FileOpen', 'Open a file')
+        sm.register('FileWrite', 'Write a file')
 

@@ -22,6 +22,8 @@ from signals import CombatantSignals
 from twcommand import TimeW, CommandSterilizationError, CommandError
 from twcommand import TimeWCommand as twc
 
+from util.file import File, NoFileError
+
 from activity import Activity
 
 class TaskCreationError(Exception):
@@ -112,6 +114,9 @@ class Combatant:
         self.signal_manager.connect(self.frame.cl, 'CMD', self.signal_cmd)
         self.signal_manager.connect(self.frame, 'Quit', self.signal_quit)
 
+        self.signal_manager.connect(self, 'FileOpen', self.file_open)
+        self.signal_manager.connect(self, 'FileWrite', self.file_write)
+
         self.signal_manager.connect(self, 'WinChange', self.frame.body.win_change)
         self.signal_manager.connect(self, 'WinChange', self.frame.tabs.win_change)
         self.signal_manager.connect(self, 'WinChange', self.frame.cl.win_change)
@@ -151,7 +156,7 @@ class Combatant:
 
     def app_start(self):
         """ Perform at AppStart """
-        self.signal_cmd('tags')
+        #self.signal_cmd('tags')
         #status self.signal_cmd('')
 
     def signal_cmd(self, cmd):
@@ -179,6 +184,9 @@ class Combatant:
             exc = traceback.format_exception(exc, limit=4, chain=True)
             for l in exc:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
+
+        finally:
+            return 0
 
     def cmd_result(self, task):
         r = None
@@ -222,6 +230,78 @@ class Combatant:
                     a = Activity(status='recorded',
                                  started=m.groups()[1])
                     self.signal_manager.put('StopActivity', a)
+
+
+    def file_open(self, f):
+        """Create a task that opens a file"""
+        logging.debug(f'File open {f!r}')
+        task = None
+
+        try:
+            task = self.asyncio_loop.create_task(File.open(f),
+                                                 name=f'FileOpen {f!r}')
+
+            if isinstance(task, asyncio.Task):
+                task.add_done_callback(self.file_open_result)
+                self._tasks.add(task)
+
+            else:
+                raise TaskCreationError(cmd)
+
+        except BaseException as exc:
+            logging.debug(f"Failed to create task for file open '{f}'")
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
+
+        finally:
+            return 0
+
+    def file_write(self, f, c):
+        """Create a task that writes a file"""
+        logging.debug(f'File write {f!r}')
+        task = None
+
+        try:
+            task = self.asyncio_loop.create_task(File.write(f, c),
+                                                 name=f'FileWrite {f!r}')
+
+            if isinstance(task, asyncio.Task):
+                task.add_done_callback(self.file_open_result)
+                self._tasks.add(task)
+
+            else:
+                raise TaskCreationError(cmd)
+
+        except BaseException as exc:
+            logging.debug(f"Failed to create task for file write '{f}'")
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
+
+        finally:
+            return 0
+
+    def file_open_result(self, task):
+        try:
+            r = task.result()
+            if type(r) == str:
+                logging.debug(
+                    'File open result: len {0}; {1}...'.format(len(r[0]),
+                                    r[0][:200 if len(r[0])>=200 else len(r[0])]))
+
+            elif r == 0:
+                logging.debug('File written: {r!r}')
+
+        except BaseException as exc:
+            logging.debug(f'File Error Traceback')
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
+
+        finally:
+            self._tasks.discard(task)
+            return 0
 
     def draw_screen(self):
         logging.debug('draw screen')
