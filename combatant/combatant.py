@@ -309,6 +309,9 @@ class Combatant:
 
         finally:
             self._tasks.discard(task)
+            if r:
+                self.signal_manager.put('FileOpened', r)
+
             return 0
 
     def draw_screen(self):
