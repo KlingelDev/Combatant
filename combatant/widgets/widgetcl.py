@@ -82,6 +82,9 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         self._cmds = []
         """Command history"""
 
+        self._cmdsi = None
+        """Command history index"""
+
         self.cmp_pos = 0
         """Position in CLEdit"""
 
@@ -100,6 +103,8 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         """
         logging.debug(f"CLEdit keypress '{key}'")
 
+        cmd = self._command_map[key]
+
         if key == 'esc':
             if self.cmp_is_open():
                 self.close_pop_up()
@@ -112,6 +117,33 @@ class WidgetCLEdit(CombatantPopUpLauncher):
             self._cmd_mode = True
             self.send_cmd()
             return
+
+        elif cmd == u.CURSOR_UP:
+            if not self.cmp_is_open() and len(self._cmds) > 0:
+                if self._cmdsi == None:
+                    self._cmdsi = len(self._cmds)-1
+                else:
+                    self._cmdsi = self._cmdsi - 1 if self._cmdsi > 0 else 0
+
+                et = self._cmds[self._cmdsi]
+
+                self._w.set_edit_text(et)
+                self._w.set_edit_pos(len(et))
+
+        elif cmd == u.CURSOR_DOWN:
+            if not self.cmp_is_open() and len(self._cmds) > 0:
+                if self._cmdsi == None:
+                    self._cmdsi = len(self._cmds)-1
+                else:
+                    if self._cmdsi < (len(self._cmds)-1):
+                        self._cmdsi = self._cmdsi + 1
+                    else:
+                        self._cmdsi = (len(self._cmds)-1)
+
+                et = self._cmds[self._cmdsi]
+
+                self._w.set_edit_text(et)
+                self._w.set_edit_pos(len(et))
 
         elif self._edit.valid_char(key):
             if not self.cmp_is_open():
@@ -148,6 +180,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
 
         elif cmd == u.CURSOR_UP:
             self._pop_up_widget.select(-1)
+
 
         elif cmd == u.CURSOR_DOWN:
             self._pop_up_widget.select(1)
@@ -243,7 +276,10 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         et = self._w.edit_text
 
         et = regex.sub('[\s]*$', '', et)
+
         self._cmds.append(et)
+        self._cmdsi = len(self._cmds)
+
         self.emit('CMD', et)
 
         self.close_pop_up()
