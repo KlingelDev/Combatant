@@ -49,7 +49,8 @@ class TimeWCommand:
      'track': ('<interval> [<tag> ...]'),
      'undo': (''),
      'untag': ('@<id> [@<id> ...] <tag> [<tag> ...]'),
-     'week': ('[<interval>] [<tag> ...]')
+     'week': ('[<interval>] [<tag> ...]'),
+     'quit': ('Quit Combatant')
     }
 
     date_pattern = '((?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T' + \
