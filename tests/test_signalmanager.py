@@ -22,7 +22,7 @@ class SignalManagerTestCase(unittest.TestCase):
 
         self.sm.connect(self, 'SigTest', test)
 
-        self.assertEqual(len(self.sm._registry['SigTest']._handlers), 1)
+        assert len(self.sm._registry['SigTest']._handlers) == 1
 
     def test_connect_two(self):
         self.sm.register('SigTest', 'Test desc')
@@ -35,7 +35,7 @@ class SignalManagerTestCase(unittest.TestCase):
 
         self.sm.connect(self, 'SigTest', test)
         self.sm.connect(self, 'SigTest', test2)
-        self.assertEqual(len(self.sm._registry['SigTest']._handlers), 2)
+        len(self.sm._registry['SigTest']._handlers) == 2
 
     def test_put(self):
         self.sm.register('SigTest', 'Test desc')
@@ -67,7 +67,7 @@ class SignalManagerTestCase(unittest.TestCase):
         self.sm.put('SigTest', 1)
         self.sm.process()
 
-        self.assertEqual(a.x, 2)
+        assert a.x == 2
 
     def test_process1a(self):
         """No callback on caller"""
@@ -86,7 +86,7 @@ class SignalManagerTestCase(unittest.TestCase):
         self.sm.put('SigTest', 1)
         self.sm.process()
 
-        self.assertEqual(a.x, 6)
+        assert a.x == 6
 
     def test_process2(self):
         """Two callbacks"""
@@ -115,5 +115,5 @@ class SignalManagerTestCase(unittest.TestCase):
         self.sm.put('SigTest', 1)
         self.sm.process()
 
-        self.assertEqual(a.x, 1)
-        self.assertEqual(b.x, 3)
+        assert a.x == 1
+        assert b.x == 3

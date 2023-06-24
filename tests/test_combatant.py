@@ -47,7 +47,7 @@ class CombatantTestCase(unittest.TestCase):
         self.c.uloop.set_alarm_in(0.5, self.c.signal_quit)
         self.c.run()
 
-        self.assertEqual(fhandle.r, teststr)
+        assert fhandle.r == teststr
 
         os.remove(file)
 
@@ -73,6 +73,6 @@ class CombatantTestCase(unittest.TestCase):
         self.c.uloop.set_alarm_in(0.5, self.c.signal_quit)
         self.c.run()
 
-        self.assertEqual(fhandle.r, teststr)
+        assert fhandle.r == teststr
 
         os.remove(file)
