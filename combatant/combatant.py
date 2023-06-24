@@ -86,6 +86,7 @@ class Combatant:
         if self.unittest:
             # Redirect stdout into nothing for unittest
             stdout_buff = StringIO()
+            stdin_buff = StringIO()
             self.ui = u.raw_display.Screen(output=stdout_buff)
 
         else:

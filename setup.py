@@ -20,7 +20,7 @@ with open(path.join(FILE_DIR, 'requirements.txt')) as f:
     INSTALL_PACKAGES = f.read().splitlines()
 
 with open(path.join(FILE_DIR, 'combatant', 'version.py')) as f:
-    VERSION = re.match(r"^COMBATANT = \'([\w\.]+)\'$", f.read().strip())[1]
+    VERSION = re.match(r"^COMBATANT = \'([\w\.-]+)\'$", f.read().strip())[1]
 
 setup(
     name='combatant',

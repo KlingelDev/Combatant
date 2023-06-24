@@ -117,6 +117,3 @@ class SignalManagerTestCase(unittest.TestCase):
 
         self.assertEqual(a.x, 1)
         self.assertEqual(b.x, 3)
-
-if __name__ == "__main__":
-    unittest.main()
