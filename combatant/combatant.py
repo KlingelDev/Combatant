@@ -255,7 +255,8 @@ class Combatant:
                 self._tasks.add(task)
 
             else:
-                raise TaskCreationError(cmd)
+                # TODO raise File exception
+                pass
 
         except BaseException as exc:
             logging.debug(f"Failed to create task for file open '{f}'")
@@ -280,7 +281,8 @@ class Combatant:
                 self._tasks.add(task)
 
             else:
-                raise TaskCreationError(cmd)
+                # TODO raise File exception
+                pass
 
         except BaseException as exc:
             logging.debug(f"Failed to create task for file write '{f}'")

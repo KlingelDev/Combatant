@@ -28,7 +28,7 @@ class SignalManager:
         else:
             raise SignalConnectError(name)
 
-    def disconnect(self, signal_name, handler=None, caller=None):
+    def disconnect(self, name, handler=None, caller=None):
         if name in self.registry:
             self._registry[name].remove_handler(handler)
 
