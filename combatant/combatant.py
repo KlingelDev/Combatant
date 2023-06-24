@@ -165,7 +165,8 @@ class Combatant:
         """ Perform per `tick` """
         self.signal_manager.process()
 
-        self.uloop.set_alarm_in(self._tick, self.tick)
+        if u != 'test':
+            self.uloop.set_alarm_in(self._tick, self.tick)
 
     def app_start(self):
         """ Perform at AppStart """

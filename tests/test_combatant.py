@@ -18,11 +18,11 @@ class CombatantTestCase(unittest.TestCase):
     def test_cmd_twhelp(self):
         self.c.signal_cmd('timew help')
 
-    def test_run_stop(self):
+    async def test_run_stop(self):
         self.c.uloop.set_alarm_in(0.001, self.c.signal_quit)
-        self.c.run()
+        await self.c.run()
 
-    def test_open_file(self):
+    async def test_open_file(self):
         teststr = 'This is a test\n'
 
         file = os.path.join(os.getcwd(), 'test.txt')
@@ -44,14 +44,14 @@ class CombatantTestCase(unittest.TestCase):
         self.c.signal_manager.connect(self, 'FileOpened', fhandle.fr_handle)
 
         self.c.signal_manager.put('FileOpen', file)
-        self.c.uloop.set_alarm_in(0.5, self.c.signal_quit)
-        self.c.run()
+        self.c.uloop.set_alarm_in(1, self.c.signal_quit)
+        await self.c.run()
 
         assert fhandle.r == teststr
 
         os.remove(file)
 
-    def test_write_and_open_file(self):
+    async def test_write_and_open_file(self):
         teststr = 'This is a test\n'
         file = os.path.join(os.getcwd(), 'test.txt')
 
@@ -70,8 +70,8 @@ class CombatantTestCase(unittest.TestCase):
         self.c.signal_manager.put('FileOpen', file)
         self.c.signal_manager.put('FileWrite', file, teststr)
 
-        self.c.uloop.set_alarm_in(0.5, self.c.signal_quit)
-        self.c.run()
+        self.c.uloop.set_alarm_in(1, self.c.signal_quit)
+        await self.c.run()
 
         assert fhandle.r == teststr
 
