@@ -246,7 +246,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
                     et = self._w.edit_text
                     s = self._pop_up_widget.get_selected()
 
-                    et = regex.sub('(\w+)[\s]*$', s, et)
+                    et = regex.sub(r'(\w+)[\s]*$', s, et)
                     et += ' '
                     self._w.set_edit_text(et)
                     self._w.set_edit_pos(len(et))
@@ -275,7 +275,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
     def send_cmd(self):
         et = self._w.edit_text
 
-        et = regex.sub('[\s]*$', '', et)
+        et = regex.sub(r'[\s]*$', '', et)
 
         self._cmds.append(et)
         self._cmdsi = len(self._cmds)
@@ -329,7 +329,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         r = map(lambda x: x+'|', list(TimeWCommand.supported_commands.keys()))
         c = ''.join(list(r))[:-1]
 
-        s = "^("+a+"){0,1}\s{0,1}("+c+"){0,1}\s{0,1}"
+        s = r"^("+ a + r"){0,1}\s{0,1}(" + c + r"){0,1}\s{0,1}"
         m = regex.search(s, et) if et != '' else None
 
         cmds = []
@@ -356,7 +356,7 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         b = []
         for c in cmds:
             txt_out = []
-            cm = regex.search("("+search_text+")+", c)
+            cm = regex.search(r"("+search_text+r")+", c)
             if cm != None:
                 cm_ch = []
                 for s in cm.spans():

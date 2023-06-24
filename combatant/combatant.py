@@ -152,14 +152,14 @@ class Combatant:
 
         except u.ExitMainLoop as exc:
             logging.debug('quitting.')
-            return 0
+            return
 
         except BaseException as exc:
             traceback.print_exception(exc, limit=1, file=sys.stdout)
             self.signal_quit()
 
         finally:
-            return 0
+            return
 
     def tick(self, c, u):
         """ Perform per `tick` """

@@ -53,12 +53,12 @@ class TimeWCommand:
      'quit': ('Quit Combatant')
     }
 
-    date_pattern = '((?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T' + \
-                   '(?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2}))'
+    date_pattern = r'((?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T' + \
+                   r'(?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2}))'
 
     # TODO catch tags
-    start_pattern = 'Tracking\s*(\w*)[\n\s]+Started\s' + date_pattern
-    stop_pattern = 'Recorded\s*(\w*)[\n\s]+Started\s' + date_pattern
+    start_pattern = r'Tracking\s*(\w*)[\n\s]+Started\s' + date_pattern
+    stop_pattern = r'Recorded\s*(\w*)[\n\s]+Started\s' + date_pattern
 
 class TimeW:
     """

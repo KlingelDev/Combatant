@@ -1,5 +1,5 @@
 import os
-
+import pytest
 import logging
 import unittest
 from combatant.combatant import Combatant
