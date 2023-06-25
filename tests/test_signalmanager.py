@@ -117,3 +117,22 @@ class SignalManagerTestCase(unittest.TestCase):
 
         assert a.x == 1
         assert b.x == 3
+
+    def test_process3(self):
+        """Method handle"""
+        self.sm.register('SigTest', 'Test desc')
+
+        class A:
+            def __init__(self):
+                self.x = 6
+
+            def ahandle(self, s):
+                self.x = s
+
+        a = A()
+
+        self.sm.connect(a, 'SigTest', a.ahandle)
+        self.sm.put('SigTest', 1)
+        self.sm.process()
+
+        assert a.x == 1

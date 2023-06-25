@@ -15,6 +15,9 @@ class SignalManager:
         self._que = []
         self._registry = {}
 
+        self.waitfortag = None
+        self.waitforoccured = False
+
     def register(self, name, desc):
         self._registry[name] = SMSignal(name, desc)
 
@@ -35,57 +38,52 @@ class SignalManager:
         else:
             raise SignalConnectError(name)
 
+    def setwaitfor(self, tag):
+        self.waitfortag = tag
+
     def process(self):
         """Process signals in the queue"""
         ret = []
 
-       #remove duplicates
-        signals = []
-        m = self.get()
+        #remove duplicates
+        signals = list(set(self._que))
+        self._que = []
 
-        while m:
-            found = 0
-            for s in signals:
-                if s[0] == m[0]:
-                    found = 1
-                    break
-
-            if not found:
-                signals.append(m)
-
-            m = self.get()
-
+        #logging.debug('signals {0!r}'.format(signals))
         for s in signals:
             if s[0] in self._registry:
-                for h in self._registry[s[0]].handlers:
-                    if s[0] == 'CMDMode':
-                        logging.debug('h {0!r}'.format(h))
+                #logging.debug('signal {0!r}'.format(s[0]))
+                if self.waitfortag == s[0]:
+                    self.waitforoccured = True
+                    logging.debug('Waitfor {0!r} called'.format(self.waitfor))
 
+                for h in self._registry[s[0]].handlers:
                     if len(h[2]):
-                       r = h[1](*s[1:], userdata=h[2])
+                       r = h[1].__call__(*s[1:], userdata=h[2])
+
                     else:
-                       r = h[1](*s[1:])
+                       #logging.debug('h w/ ud {0!r} {1!r}'.format(h[1], s[1:]))
+                       r = h[1].__call__(*s[1:])
 
                     try:
                         # Calls done. Let caller know
-                        c = getattr(h[0], 'callback')
-                        if c: c(r)
+                        if hasattr(h[0], 'callback'):
+                            c = getattr(h[0], 'callback')
+                            if c: c(r)
 
                     except AttributeError:
-                        pass
-
+                        raise
             else:
                 raise SignalConnectError(s[0])
 
     def put(self, signal, *args):
+        #logging.debug('Put {0!r}'.format(signal))
         self._que.append((signal, *args))
 
-    def get(self):
-        try:
-            return self._que.pop()
-
-        except IndexError:
-            return False
+    @property
+    def waitfor(self) -> bool:
+        """Waitfor handler was seen"""
+        return self.waitforoccured
 
 class SMSignal:
     def __init__(self, name, desc):

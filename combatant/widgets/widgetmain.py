@@ -55,7 +55,7 @@ class WidgetMain(CombatantWidgetWrap):
 
     def keypress(self, size, key):
         if key == 'ctl q' or key == 'ctrl Q':
-            self.emit('Quit')
+            #self.emit('Quit')
             return
 
         if key == self._cmd_key:

@@ -77,6 +77,8 @@ class Combatant:
         self._tick = .1666 #sec
         self._last_tick = time.time_ns()
 
+        self.pafter_start = []
+
         self._tasks = set()
 
         if setup:
@@ -86,7 +88,6 @@ class Combatant:
         if self.unittest:
             # Redirect stdout into nothing for unittest
             stdout_buff = StringIO()
-            stdin_buff = StringIO()
             self.ui = u.raw_display.Screen(output=stdout_buff)
 
         else:
@@ -102,13 +103,14 @@ class Combatant:
 
         #loop.screen.set_terminal_properties(colors=256)
 
-        logging.debug('Palette {0}'.format(repr(CombatantPalette.colors())))
         self.uloop = u.MainLoop(self.frame,
                                 CombatantPalette.colors(),
                                 screen = self.ui,
                                 handle_mouse = True,
                                 event_loop = self.aloop,
                                 pop_ups = True)
+
+        logging.debug('Main loop {0!r}'.format(self.uloop))
 
         # SIGhandler setup
         self.asyncio_loop.add_signal_handler(signal.SIGWINCH, self.signal_winch)
@@ -148,30 +150,48 @@ class Combatant:
             # Setup tick
             self.uloop.set_alarm_in(self._tick, self.tick)
 
+            logging.debug('Running main loop.')
             self.uloop.run()
 
         except u.ExitMainLoop as exc:
-            logging.debug('quitting.')
+            logging.debug(f'ExitMainLoop <{exc!r}>')
             return
 
         except BaseException as exc:
-            traceback.print_exception(exc, limit=1, file=sys.stdout)
+            exc = traceback.format_exception(exc, limit=4, chain=True)
+            for l in exc:
+                if len(l): logging.debug('{0}'.format(l[:-1]))
+
+            logging.debug(f'quitting. <{exc!r}>')
             self.signal_quit()
 
         finally:
+            logging.debug('finally. quitting.')
             return
 
-    def tick(self, c, u):
+    def tick(self, *arg):
         """ Perform per `tick` """
         self.signal_manager.process()
 
-        if u != 'test':
-            self.uloop.set_alarm_in(self._tick, self.tick)
+        self.uloop.set_alarm_in(self._tick, self.tick)
+
+        if (self.unittest and self.signal_manager.waitfor):
+            logging.debug('Waitfor exit {0} {1}'.format(self.unittest,
+                                                         self.signal_manager.waitfor))
+            self.signal_quit()
 
     def app_start(self):
         """ Perform at AppStart """
-        #self.signal_cmd('tags')
-        #status self.signal_cmd('')
+        logging.debug('App start.')
+
+        for p in self.pafter_start:
+            logging.debug('p after {0!r}'.format(*p))
+            self.signal_manager.put(p[0], *p[1])
+
+    def put_after_start(self, sig, *args):
+        """ Perform at AppStart """
+        logging.debug(f'Put after start {sig!r}')
+        self.pafter_start.append((sig, args))
 
     def signal_cmd(self, cmd):
         # TODO add commands to switch tabs
@@ -270,7 +290,8 @@ class Combatant:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
         finally:
-            return 0
+            pass
+        #return 0
 
     def file_write(self, f, c):
         """Create a task that writes a file"""
@@ -296,18 +317,20 @@ class Combatant:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
         finally:
-            return 0
+            pass
+        #return 0
 
     def file_open_result(self, task):
+        r = None
         try:
             r = task.result()
             if type(r) == str:
                 logging.debug(
-                    'File open result: len {0}; {1}...'.format(len(r[0]),
-                                    r[0][:200 if len(r[0])>=200 else len(r[0])]))
+                    'File open result: len {0}; {1}...'.format(len(r),
+                                    r[:200 if len(r)>=200 else len(r)]))
 
             elif r == 0:
-                logging.debug('File written: {r!r}')
+                logging.debug(f'File written: {r!r}')
 
         except BaseException as exc:
             logging.debug(f'File Error Traceback')
@@ -317,10 +340,8 @@ class Combatant:
 
         finally:
             self._tasks.discard(task)
-            if r:
+            if r and type(r) == str and r != '':
                 self.signal_manager.put('FileOpened', r)
-
-            return 0
 
     def draw_screen(self):
         logging.debug('draw screen')

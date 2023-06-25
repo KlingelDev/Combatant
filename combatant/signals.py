@@ -14,4 +14,5 @@ class CombatantSignals:
         sm.register('FileOpened', 'Open a file')
         sm.register('FileWrite', 'Write a file')
         sm.register('FileWritten', 'Write a file')
+        sm.register('TestComplete', 'TestingCompleted')
 

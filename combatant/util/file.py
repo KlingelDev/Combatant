@@ -18,8 +18,11 @@ class File:
         return filec
 
     async def write(f, c):
-        file = open(f, 'w', encoding='utf-8')
-        file.write(c)
-        file.close()
+        try:
+            file = open(f, 'w', encoding='utf-8')
+            file.write(c)
+            file.close()
+        except:
+            raise
 
         return 0
