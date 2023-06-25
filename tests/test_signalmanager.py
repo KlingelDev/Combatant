@@ -68,6 +68,7 @@ class SignalManagerTestCase(unittest.TestCase):
         self.sm.process()
 
         assert a.x == 2
+        assert len(self.sm._que) == 0
 
     def test_process1a(self):
         """No callback on caller"""
@@ -87,6 +88,7 @@ class SignalManagerTestCase(unittest.TestCase):
         self.sm.process()
 
         assert a.x == 6
+        assert len(self.sm._que) == 0
 
     def test_process2(self):
         """Two callbacks"""
