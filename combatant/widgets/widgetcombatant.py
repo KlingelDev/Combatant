@@ -11,6 +11,10 @@ class CombatantWidget:
         obj = object.__new__(cls)
         if 'sm' in kwargs:
             obj._sm = kwargs['sm']
+
+        if 'cfg' in kwargs:
+            obj._cfg = kwargs['cfg']
+
             obj._w = None
         return obj
 

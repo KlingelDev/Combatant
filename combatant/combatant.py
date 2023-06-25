@@ -23,7 +23,7 @@ from twcommand import TimeW, CommandSterilizationError, CommandError
 from twcommand import TimeWCommand as twc
 
 from util.file import File, NoFileError
-
+from config import CombatantConfig
 from activity import Activity
 
 class TaskCreationError(Exception):
@@ -68,15 +68,15 @@ class Combatant:
     setup: bool
     """Perform setup"""
 
-    def __init__(self, setup=False, unittest=False):
+    def __init__(self, setup=False, unittest=False, combatant_cfgdir=None):
         logging.debug('=====================================================')
         logging.debug('...starting.')
 
+        self.cfgdir = combatant_cfgdir
         self.unittest = unittest
 
         self._tick = .1666 #sec
         self._last_tick = time.time_ns()
-
         self.pafter_start = []
 
         self._tasks = set()
@@ -96,7 +96,10 @@ class Combatant:
         self.signal_manager = SignalManager()
         CombatantSignals.register_signals(sm=self.signal_manager)
 
-        self.frame = WidgetMain(sm=self.signal_manager)
+        self.cfg = CombatantConfig(self.cfgdir, sm=self.signal_manager)
+        self.cfg.load()
+
+        self.frame = WidgetMain(sm=self.signal_manager, cfg=self.cfg)
 
         self.asyncio_loop = asyncio.get_event_loop()
         self.aloop = u.AsyncioEventLoop(loop = self.asyncio_loop)
@@ -126,6 +129,7 @@ class Combatant:
         self.signal_manager.connect(self.frame, 'Quit', self.signal_quit)
 
         self.signal_manager.connect(self, 'FileOpen', self.file_open)
+        self.signal_manager.connect(self.cfg, 'FileOpen', self.file_open)
         self.signal_manager.connect(self, 'FileWrite', self.file_write)
 
         self.signal_manager.connect(self, 'WinChange', self.frame.body.win_change)
@@ -148,7 +152,7 @@ class Combatant:
             self.signal_manager.put('WinChange', (cols, rows))
 
             # Setup tick
-            self.uloop.set_alarm_in(self._tick, self.tick)
+            self.uloop.set_alarm_in(0, self.tick)
 
             logging.debug('Running main loop.')
             self.uloop.run()
@@ -324,13 +328,13 @@ class Combatant:
         r = None
         try:
             r = task.result()
-            if type(r) == str:
+            if type(r[1]) == str:
                 logging.debug(
                     'File open result: len {0}; {1}...'.format(len(r),
                                     r[:200 if len(r)>=200 else len(r)]))
 
-            elif r == 0:
-                logging.debug(f'File written: {r!r}')
+            elif r[1] == 0:
+                logging.debug('File written: {r!r}')
 
         except BaseException as exc:
             logging.debug(f'File Error Traceback')
@@ -340,7 +344,8 @@ class Combatant:
 
         finally:
             self._tasks.discard(task)
-            if r and type(r) == str and r != '':
+            if type(r[1]) == str:
+                logging.debug('Signal FileOpened {0!r}'.format(r[0]))
                 self.signal_manager.put('FileOpened', r)
 
     def draw_screen(self):

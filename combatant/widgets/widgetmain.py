@@ -12,7 +12,7 @@ class WidgetMain(CombatantWidgetWrap):
     """
     Houses the frame with tabline, body and command line
     """
-    def __init__(self, sm=None):
+    def __init__(self, sm=None, cfg=None):
         self._cmd_key = ':'
         """Set command key"""
 

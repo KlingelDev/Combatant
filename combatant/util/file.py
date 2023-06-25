@@ -15,14 +15,16 @@ class File:
         file = open(f, 'r', encoding='utf-8')
         filec = file.read()
         file.close()
-        return filec
+
+        return (f, filec)
 
     async def write(f, c):
         try:
             file = open(f, 'w', encoding='utf-8')
             file.write(c)
             file.close()
+
         except:
             raise
 
-        return 0
+        return (f, 0)
