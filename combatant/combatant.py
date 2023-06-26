@@ -284,8 +284,7 @@ class Combatant:
                 self._tasks.add(task)
 
             else:
-                # TODO raise File exception
-                pass
+                raise TypeError('task not type asyncio.Task')
 
         except BaseException as exc:
             logging.debug(f"Failed to create task for file open '{f}'")
@@ -294,8 +293,7 @@ class Combatant:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
         finally:
-            pass
-        #return 0
+            return 0
 
     def file_write(self, f, c):
         """Create a task that writes a file"""
@@ -311,8 +309,7 @@ class Combatant:
                 self._tasks.add(task)
 
             else:
-                # TODO raise File exception
-                pass
+                raise TypeError('task not type asyncio.Task')
 
         except BaseException as exc:
             logging.debug(f"Failed to create task for file write '{f}'")
@@ -321,8 +318,7 @@ class Combatant:
                 if len(l): logging.debug('{0}'.format(l[:-1]))
 
         finally:
-            pass
-        #return 0
+            return 0
 
     def file_open_result(self, task):
         r = None
@@ -335,6 +331,7 @@ class Combatant:
 
             elif r[1] == 0:
                 logging.debug('File written: {r!r}')
+                return 0
 
         except BaseException as exc:
             logging.debug(f'File Error Traceback')
