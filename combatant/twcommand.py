@@ -1,4 +1,4 @@
-import subprocess, re, regex
+import subprocess, regex
 import logging
 import asyncio
 
@@ -53,6 +53,16 @@ class TimeWCommand:
      'quit': ('Quit Combatant')
     }
 
+    r = map(lambda x: x+'|', alias)
+    a = ''.join(list(r))[:-1]
+
+    r = map(lambda x: x+'|', list(supported_commands.keys()))
+    c = ''.join(list(r))[:-1]
+
+    cmd_pattern = r"^("+ a + r"){0,1}\s{0,1}(" + c + r"){0,1}\s{0,1}"
+
+    del r, c, a
+
     date_pattern = r'((?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})T' + \
                    r'(?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2}))'
 
@@ -70,11 +80,11 @@ class TimeW:
 
     @staticmethod
     def sterilize(cmd):
-        naughty_match = re.search(r"(\||;|\&|>|<|´|`)", cmd)
-        cmd = re.sub(r"^((timew|timewarrior) )", '', cmd)
+        naughty_match = regex.search(r"(\||;|\&|>|<|´|`)", cmd)
+        cmd = regex.sub(r"^((timew|timewarrior) )", '', cmd)
 
         if naughty_match:
-            raise CommandError(naughty_match.group(0))
+            raise CommandSterilizationError(naughty_match.group(0))
 
         else:
             # Return chopped command
@@ -91,12 +101,9 @@ class TimeW:
         return (returncode, stdout, stderr)
 
     async def run(cmd):
-        c_match = re.search(
-        # TODO get stuff from TimeWCommands
-        r'^(timew|timewarrior|)[ ]{0,1}(\-\-|)(start|stop|version|help)',
-         cmd)
+        m = regex.search(TimeWCommand.cmd_pattern, cmd) if cmd != '' else None
 
-        if c_match:
+        if m != None and (m.groups()[0] != None or m.groups()[1] != None):
             c = TimeW.sterilize(cmd)
             c.insert(0, 'timew')
             logging.debug(f"EXECUTE'{c!r}'")

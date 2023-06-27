@@ -322,15 +322,8 @@ class WidgetCLEdit(CombatantPopUpLauncher):
         et = self._w.edit_text
 
         # Remove completed commands/show args
-        #TODO Reset selected somewhere around here
-        r = map(lambda x: x+'|', TimeWCommand.alias)
-        a = ''.join(list(r))[:-1]
-
-        r = map(lambda x: x+'|', list(TimeWCommand.supported_commands.keys()))
-        c = ''.join(list(r))[:-1]
-
-        s = r"^("+ a + r"){0,1}\s{0,1}(" + c + r"){0,1}\s{0,1}"
-        m = regex.search(s, et) if et != '' else None
+        #TODO Reset selected item somewhere around here
+        m = regex.search(TimeWCommand.cmd_pattern, et) if et != '' else None
 
         cmds = []
         self.arg_help = False
