@@ -31,6 +31,11 @@ class TaskCreationError(Exception):
         self.message = f"Cannot create task for cmd '{cmd}'"
         super(Exception, self).__init__(self.message)
 
+class TWNotFoundError(Exception):
+    def __init__(self):
+        self.message = f"Timewarrior not installed."
+        super(Exception, self).__init__(self.message)
+
 class CombatantPalette:
     @staticmethod
     def colors():
@@ -161,6 +166,11 @@ class Combatant:
             logging.debug(f'ExitMainLoop <{exc!r}>')
             return
 
+        except TWNotFoundError as exc:
+            print("Missing dependency. Please install timewarrior.\n")
+            logging.debug(f'Missing dependency. Please install timewarrior.')
+            self.signal_quit()
+
         except BaseException as exc:
             exc = traceback.format_exception(exc, limit=4, chain=True)
             for l in exc:
@@ -170,8 +180,7 @@ class Combatant:
             self.signal_quit()
 
         finally:
-            logging.debug('finally. quitting.')
-            return
+            return 0
 
     def tick(self, *arg):
         """ Perform per `tick` """
@@ -187,6 +196,9 @@ class Combatant:
     def app_start(self):
         """ Perform at AppStart """
         logging.debug('App start.')
+
+        # Check if Timew is installed
+        self.signal_cmd('timew help')
 
         for p in self.pafter_start:
             logging.debug('p after {0!r}'.format(*p))
@@ -235,6 +247,12 @@ class Combatant:
                                                                len(r[1]),
                                 r[1][:200 if len(r[1])>=200 else len(r[1])]))
 
+        except FileNotFoundError as exc:
+            logging.debug('feresult {0!r}'.format(str(exc)))
+            m = regex.search(r'No such file.*timew.*', str(exc))
+            if m != None:
+                raise TWNotFoundError
+
         except CommandError as exc:
             exc = traceback.format_exception(exc, limit=4, chain=True)
             for l in exc:
@@ -250,7 +268,6 @@ class Combatant:
             # Create Activity objects for display
             self._tasks.discard(task)
             if r and r[0] == 0:
-                logging.debug('result: {0!r}'.format(r[1]))
                 resstr = r[1].decode('utf-8')
 
                 m = regex.match(twc.start_pattern, resstr)
